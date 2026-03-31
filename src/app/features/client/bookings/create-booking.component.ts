@@ -42,12 +42,12 @@ import { BookingRequest, ExtraRequest } from '../../../core/models/booking.model
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Date de retrait</label>
               <input type="date" [(ngModel)]="pickupDate" name="pickupDate" required
-                class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
+                class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Date de retour</label>
               <input type="date" [(ngModel)]="returnDate" name="returnDate" required
-                class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
+                class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
             </div>
           </div>
         </div>
@@ -59,7 +59,7 @@ import { BookingRequest, ExtraRequest } from '../../../core/models/booking.model
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Lieu de retrait</label>
               <select [(ngModel)]="pickupLocationId" name="pickupLocationId" required
-                class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                 <option [ngValue]="0" disabled>Sélectionner un lieu</option>
                 @for (loc of locations(); track loc.id) {
                   <option [ngValue]="loc.id">{{ loc.name }} - {{ loc.city }}</option>
@@ -69,7 +69,7 @@ import { BookingRequest, ExtraRequest } from '../../../core/models/booking.model
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Lieu de retour</label>
               <select [(ngModel)]="returnLocationId" name="returnLocationId" required
-                class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                class="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                 <option [ngValue]="0" disabled>Sélectionner un lieu</option>
                 @for (loc of locations(); track loc.id) {
                   <option [ngValue]="loc.id">{{ loc.name }} - {{ loc.city }}</option>
