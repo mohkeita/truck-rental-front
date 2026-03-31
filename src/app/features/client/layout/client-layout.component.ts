@@ -17,12 +17,17 @@ import { AuthService } from '../../../core/services/auth.service';
           <a routerLink="/client/trucks" routerLinkActive="text-orange-400 bg-gray-800"
             class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
             <span class="text-xl">🚛</span>
-            <span class="text-sm font-medium">Available Trucks</span>
+            <span class="text-sm font-medium">Camions disponibles</span>
+          </a>
+          <a routerLink="/client/bookings" routerLinkActive="text-orange-400 bg-gray-800"
+            class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
+            <span class="text-xl">📋</span>
+            <span class="text-sm font-medium">Mes réservations</span>
           </a>
           <a routerLink="/client/contracts" routerLinkActive="text-orange-400 bg-gray-800"
             class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
             <span class="text-xl">📄</span>
-            <span class="text-sm font-medium">My Contracts</span>
+            <span class="text-sm font-medium">Mes contrats</span>
           </a>
         </nav>
 
@@ -38,14 +43,14 @@ import { AuthService } from '../../../core/services/auth.service';
           </div>
           <button (click)="logout()"
             class="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors text-sm">
-            <span>🚪</span> Logout
+            <span>🚪</span> Déconnexion
           </button>
         </div>
       </aside>
 
       <div class="flex-1 flex flex-col overflow-hidden">
         <header class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-          <h2 class="text-xl font-bold text-gray-900">Client Portal</h2>
+          <h2 class="text-xl font-bold text-gray-900">Espace Client</h2>
         </header>
         <main class="flex-1 overflow-y-auto p-6">
           <router-outlet />

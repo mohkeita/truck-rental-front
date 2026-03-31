@@ -1,1 +1,31 @@
-/* Custom global styles here */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: hsl(220 20% 10%);
+  color: hsl(40 20% 92%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(220 14% 20%) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(220 14% 20%);
+  border-radius: 3px;
+}

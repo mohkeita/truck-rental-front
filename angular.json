@@ -54,6 +54,9 @@
             "styles": [
               "src/tailwind.css",
               "src/styles.scss"
+            ],
+            "allowedCommonJsDependencies": [
+              "js-sha256"
             ]
           },
           "configurations": {

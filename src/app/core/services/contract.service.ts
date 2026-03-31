@@ -13,6 +13,10 @@ export class ContractService {
     return this.http.get<PageResponse<ContractResponse>>(`${this.base}?page=${page}&size=${size}`);
   }
 
+  getMy(page = 0, size = 50) {
+    return this.http.get<PageResponse<ContractResponse>>(`${this.base}/my?page=${page}&size=${size}`);
+  }
+
   getById(id: number) {
     return this.http.get<ContractResponse>(`${this.base}/${id}`);
   }

@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TruckService } from '../../../core/services/truck.service';
 import { TruckResponse, TruckRequest } from '../../../core/models/truck.model';
@@ -6,168 +6,159 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
 
 @Component({
   selector: 'app-admin-trucks',
+  standalone: true,
   imports: [FormsModule, StatusBadgeComponent],
   template: `
-    <div>
+    <div class="animate-fade-in">
+      <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Trucks Management</h1>
+        <div>
+          <h1 class="text-3xl font-heading font-bold text-gradient uppercase">Trucks</h1>
+          <p class="text-muted-foreground text-sm mt-1">Manage the truck fleet</p>
+        </div>
         <button (click)="openAddModal()"
-          class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+          class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium font-heading uppercase tracking-wide hover:bg-primary/90 transition-colors">
           <span>+</span> Add Truck
         </button>
       </div>
 
       <!-- Table -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">License Plate</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Brand / Model</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Capacity</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Year</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Owner</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
+      <div class="glass-card rounded-xl overflow-hidden">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-border">
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">License Plate</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Brand / Model</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Capacity</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Year</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Owner</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Status</th>
+              <th class="text-right p-4 text-sm text-muted-foreground font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (truck of trucks(); track truck.id) {
+              <tr class="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                <td class="p-4 text-foreground font-medium text-sm">{{ truck.licensePlate }}</td>
+                <td class="p-4 text-foreground text-sm">{{ truck.brand }} {{ truck.model }}</td>
+                <td class="p-4 text-foreground text-sm">{{ truck.capacityTons }}t</td>
+                <td class="p-4 text-foreground text-sm">{{ truck.year }}</td>
+                <td class="p-4 text-muted-foreground text-sm">{{ truck.ownerUsername }}</td>
+                <td class="p-4">
+                  <app-status-badge [status]="truck.status" />
+                </td>
+                <td class="p-4">
+                  <div class="flex items-center justify-end gap-1">
+                    @if (truck.status === 'PENDING_VALIDATION') {
+                      <button (click)="approve(truck)"
+                        class="h-8 px-3 rounded-md bg-success/20 text-success border border-success/30 text-xs font-medium hover:bg-success/30 transition-colors">
+                        ✓ Approve
+                      </button>
+                      <button (click)="openRejectModal(truck)"
+                        class="h-8 px-3 rounded-md bg-destructive/20 text-destructive border border-destructive/30 text-xs font-medium hover:bg-destructive/30 transition-colors">
+                        ✗ Reject
+                      </button>
+                    }
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              @for (truck of trucks(); track truck.id) {
-                <tr class="hover:bg-gray-50">
-                  <td class="px-4 py-3 font-mono text-sm font-semibold">{{ truck.licensePlate }}</td>
-                  <td class="px-4 py-3">
-                    <div class="font-medium">{{ truck.brand }}</div>
-                    <div class="text-sm text-gray-500">{{ truck.model }}</div>
-                  </td>
-                  <td class="px-4 py-3 text-sm">{{ truck.capacityTons }} t</td>
-                  <td class="px-4 py-3 text-sm">{{ truck.year }}</td>
-                  <td class="px-4 py-3 text-sm text-gray-600">{{ truck.ownerUsername }}</td>
-                  <td class="px-4 py-3">
-                    <app-status-badge [status]="truck.status" />
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center gap-2">
-                      @if (truck.status === 'PENDING_VALIDATION') {
-                        <button (click)="approve(truck)"
-                          class="px-2 py-1 bg-green-100 text-green-700 hover:bg-green-200 rounded text-xs font-medium transition-colors">
-                          ✓ Approve
-                        </button>
-                        <button (click)="openRejectModal(truck)"
-                          class="px-2 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded text-xs font-medium transition-colors">
-                          ✗ Reject
-                        </button>
-                      }
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="7" class="px-4 py-12 text-center text-gray-400">No trucks found</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+            } @empty {
+              <tr>
+                <td colspan="7" class="p-8 text-center text-muted-foreground text-sm">No trucks found</td>
+              </tr>
+            }
+          </tbody>
+        </table>
 
         <!-- Pagination -->
         @if (totalPages() > 1) {
-          <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-            <span class="text-sm text-gray-500">Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
+          <div class="flex items-center justify-between p-4 border-t border-border">
+            <span class="text-sm text-muted-foreground">Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
             <div class="flex gap-2">
               <button (click)="changePage(currentPage() - 1)" [disabled]="currentPage() === 0"
-                class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-40 hover:bg-gray-50">
-                Previous
+                class="px-3 py-1.5 rounded-md bg-secondary text-foreground text-sm disabled:opacity-40 hover:bg-muted transition-colors">
+                ← Prev
               </button>
               <button (click)="changePage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1"
-                class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-40 hover:bg-gray-50">
-                Next
+                class="px-3 py-1.5 rounded-md bg-secondary text-foreground text-sm disabled:opacity-40 hover:bg-muted transition-colors">
+                Next →
               </button>
             </div>
           </div>
         }
       </div>
-    </div>
 
-    <!-- Reject Modal -->
-    @if (showRejectModal()) {
-      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-          <h3 class="text-lg font-bold mb-4">Reject Truck — {{ selectedTruck()?.licensePlate }}</h3>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Reason for rejection</label>
-          <textarea
-            [(ngModel)]="rejectReason"
-            rows="3"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
-            placeholder="Explain why this truck is being rejected..."
-          ></textarea>
-          <div class="flex gap-3 mt-4">
-            <button (click)="confirmReject()"
-              [disabled]="!rejectReason.trim()"
-              class="flex-1 py-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white rounded-lg font-medium transition-colors">
-              Confirm Rejection
-            </button>
-            <button (click)="showRejectModal.set(false)"
-              class="flex-1 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-              Cancel
-            </button>
+      <!-- Reject Modal -->
+      @if (showRejectModal()) {
+        <div class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" (click)="showRejectModal.set(false)">
+          <div class="glass-card rounded-xl p-6 w-full max-w-md" (click)="$event.stopPropagation()">
+            <h3 class="text-lg font-heading font-bold text-foreground uppercase mb-1">Reject Truck</h3>
+            <p class="text-sm text-muted-foreground mb-4">Provide a reason for rejecting <strong class="text-foreground">{{ selectedTruck()?.licensePlate }}</strong></p>
+            <textarea [(ngModel)]="rejectReason" rows="3" placeholder="Reason for rejection..."
+              class="w-full rounded-md border border-input bg-secondary px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none mb-4"></textarea>
+            <div class="flex gap-3 justify-end">
+              <button (click)="showRejectModal.set(false)"
+                class="px-4 py-2 rounded-md border border-border text-foreground text-sm hover:bg-muted transition-colors">Cancel</button>
+              <button (click)="confirmReject()" [disabled]="!rejectReason.trim()"
+                class="px-4 py-2 rounded-md bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors">
+                Confirm Reject
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    }
+      }
 
-    <!-- Add Truck Modal -->
-    @if (showAddModal()) {
-      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-          <h3 class="text-lg font-bold mb-4">Add New Truck</h3>
-          <form (ngSubmit)="submitAdd()" #addForm="ngForm">
-            <div class="grid grid-cols-2 gap-3">
-              <div class="col-span-2">
-                <label class="block text-xs font-medium text-gray-600 mb-1">License Plate</label>
-                <input type="text" name="licensePlate" [(ngModel)]="newTruck.licensePlate" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
+      <!-- Add Truck Modal -->
+      @if (showAddModal()) {
+        <div class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" (click)="showAddModal.set(false)">
+          <div class="glass-card rounded-xl p-6 w-full max-w-md" (click)="$event.stopPropagation()">
+            <h3 class="text-lg font-heading font-bold text-foreground uppercase mb-4">Add Truck</h3>
+            <form (ngSubmit)="submitAdd()" class="space-y-3">
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Brand</label>
-                <input type="text" name="brand" [(ngModel)]="newTruck.brand" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <label class="block text-xs font-medium text-muted-foreground mb-1">License Plate</label>
+                <input [(ngModel)]="newTruck.licensePlate" name="licensePlate" required
+                  class="w-full h-9 rounded-md border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Model</label>
-                <input type="text" name="model" [(ngModel)]="newTruck.model" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-muted-foreground mb-1">Brand</label>
+                  <input [(ngModel)]="newTruck.brand" name="brand" required
+                    class="w-full h-9 rounded-md border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-muted-foreground mb-1">Model</label>
+                  <input [(ngModel)]="newTruck.model" name="model" required
+                    class="w-full h-9 rounded-md border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Capacity (tons)</label>
-                <input type="number" name="capacityTons" [(ngModel)]="newTruck.capacityTons" required min="0.5"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-muted-foreground mb-1">Capacity (tons)</label>
+                  <input type="number" [(ngModel)]="newTruck.capacityTons" name="capacityTons" required
+                    class="w-full h-9 rounded-md border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-muted-foreground mb-1">Year</label>
+                  <input type="number" [(ngModel)]="newTruck.year" name="year" required
+                    class="w-full h-9 rounded-md border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Year</label>
-                <input type="number" name="year" [(ngModel)]="newTruck.year" required min="1990" max="2030"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <div class="flex gap-3 justify-end pt-2">
+                <button type="button" (click)="showAddModal.set(false)"
+                  class="px-4 py-2 rounded-md border border-border text-foreground text-sm hover:bg-muted transition-colors">Cancel</button>
+                <button type="submit"
+                  class="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
+                  Add Truck
+                </button>
               </div>
-            </div>
-            <div class="flex gap-3 mt-4">
-              <button type="submit" [disabled]="!addForm.form.valid"
-                class="flex-1 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white rounded-lg font-medium transition-colors">
-                Add Truck
-              </button>
-              <button type="button" (click)="showAddModal.set(false)"
-                class="flex-1 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                Cancel
-              </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
-      </div>
-    }
+      }
+    </div>
   `,
 })
 export class AdminTrucksComponent implements OnInit {
-  private truckService = inject(TruckService);
-
   trucks = signal<TruckResponse[]>([]);
   currentPage = signal(0);
   totalPages = signal(0);
@@ -175,58 +166,46 @@ export class AdminTrucksComponent implements OnInit {
   showAddModal = signal(false);
   selectedTruck = signal<TruckResponse | null>(null);
   rejectReason = '';
-  newTruck: TruckRequest = { licensePlate: '', brand: '', model: '', capacityTons: 5, year: new Date().getFullYear() };
+  newTruck: TruckRequest = { licensePlate: '', brand: '', model: '', capacityTons: 0, year: new Date().getFullYear() };
 
-  ngOnInit(): void {
-    this.loadTrucks();
-  }
+  constructor(private truckService: TruckService) {}
 
-  loadTrucks(): void {
+  ngOnInit() { this.loadTrucks(); }
+
+  loadTrucks() {
     this.truckService.getAll(this.currentPage(), 10).subscribe({
-      next: page => {
-        this.trucks.set(page.content);
-        this.totalPages.set(page.totalPages);
-      },
+      next: (page) => { this.trucks.set(page.content); this.totalPages.set(page.totalPages); },
     });
   }
 
-  changePage(page: number): void {
-    this.currentPage.set(page);
-    this.loadTrucks();
-  }
+  changePage(page: number) { this.currentPage.set(page); this.loadTrucks(); }
 
-  approve(truck: TruckResponse): void {
+  approve(truck: TruckResponse) {
     this.truckService.approve(truck.id).subscribe({ next: () => this.loadTrucks() });
   }
 
-  openRejectModal(truck: TruckResponse): void {
+  openRejectModal(truck: TruckResponse) {
     this.selectedTruck.set(truck);
     this.rejectReason = '';
     this.showRejectModal.set(true);
   }
 
-  confirmReject(): void {
+  confirmReject() {
     const truck = this.selectedTruck();
-    if (!truck || !this.rejectReason.trim()) return;
+    if (!truck) return;
     this.truckService.reject(truck.id, { reason: this.rejectReason }).subscribe({
-      next: () => {
-        this.showRejectModal.set(false);
-        this.loadTrucks();
-      },
+      next: () => { this.showRejectModal.set(false); this.loadTrucks(); },
     });
   }
 
-  openAddModal(): void {
-    this.newTruck = { licensePlate: '', brand: '', model: '', capacityTons: 5, year: new Date().getFullYear() };
+  openAddModal() {
+    this.newTruck = { licensePlate: '', brand: '', model: '', capacityTons: 0, year: new Date().getFullYear() };
     this.showAddModal.set(true);
   }
 
-  submitAdd(): void {
+  submitAdd() {
     this.truckService.create(this.newTruck).subscribe({
-      next: () => {
-        this.showAddModal.set(false);
-        this.loadTrucks();
-      },
+      next: () => { this.showAddModal.set(false); this.loadTrucks(); },
     });
   }
 }

@@ -1,76 +1,53 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { tap } from 'rxjs';
-import { environment } from '../../../environments/environment';
-
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  username: string;
-  password: string;
-  role: 'OWNER' | 'CLIENT';
-}
-
-export interface AuthResponse {
-  token: string;
-  username: string;
-  role: string;
-}
+import { KeycloakService } from './keycloak.service';
 
 export interface CurrentUser {
   username: string;
   role: string;
-  token: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private http = inject(HttpClient);
+  private keycloakService = inject(KeycloakService);
   private router = inject(Router);
 
-  private _currentUser = signal<CurrentUser | null>(this.loadFromStorage());
-  readonly currentUser = this._currentUser.asReadonly();
-  readonly isAuthenticated = computed(() => this._currentUser() !== null);
-  readonly role = computed(() => this._currentUser()?.role ?? null);
+  readonly isAuthenticated = this.keycloakService.authenticated;
+  readonly role = this.keycloakService.role;
 
-  private loadFromStorage(): CurrentUser | null {
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
-    const role = localStorage.getItem('role');
-    if (token && username && role) {
-      return { token, username, role };
+  readonly currentUser = computed<CurrentUser | null>(() => {
+    const username = this.keycloakService.username();
+    const role = this.keycloakService.role();
+    if (username && role) {
+      return { username, role };
     }
     return null;
+  });
+
+  getToken(): string | undefined {
+    return this.keycloakService.getToken();
   }
 
-  login(credentials: LoginRequest) {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/api/auth/login`, credentials).pipe(
-      tap(response => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('username', response.username);
-        localStorage.setItem('role', response.role);
-        this._currentUser.set({ token: response.token, username: response.username, role: response.role });
-      })
-    );
+  login(redirectUri?: string): Promise<void> {
+    return this.keycloakService.login(redirectUri);
   }
 
-  register(data: RegisterRequest) {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/api/auth/register`, data);
+  register(redirectUri?: string): Promise<void> {
+    return this.keycloakService.register(redirectUri);
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('role');
-    this._currentUser.set(null);
-    this.router.navigate(['/auth/login']);
+    this.keycloakService.logout();
   }
 
-  getToken(): string | null {
-    return this._currentUser()?.token ?? null;
+  navigateToDashboard(): void {
+    const role = this.role();
+    if (role === 'ADMIN') {
+      this.router.navigate(['/admin/dashboard']);
+    } else if (role === 'OWNER') {
+      this.router.navigate(['/owner/dashboard']);
+    } else {
+      this.router.navigate(['/client/trucks']);
+    }
   }
 }

@@ -1,10 +1,10 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '../services/auth.service';
+import { KeycloakService } from '../services/keycloak.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
-  const token = authService.getToken();
+  const keycloakService = inject(KeycloakService);
+  const token = keycloakService.getToken();
 
   if (token) {
     req = req.clone({

@@ -2,31 +2,41 @@ import { Routes } from '@angular/router';
 import { adminGuard, ownerGuard, clientGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/auth/login', pathMatch: 'full' },
-
+  // Public routes
   {
-    path: 'auth',
-    children: [
-      {
-        path: 'login',
-        loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent),
-      },
-      {
-        path: 'register',
-        loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent),
-      },
-      { path: '', redirectTo: 'login', pathMatch: 'full' },
-    ],
+    path: '',
+    loadComponent: () => import('./features/public/home/home.component').then(m => m.HomeComponent),
+  },
+  {
+    path: 'trucks',
+    loadComponent: () => import('./features/public/trucks/public-trucks.component').then(m => m.PublicTrucksComponent),
+  },
+  {
+    path: 'trucks/:id',
+    loadComponent: () => import('./features/public/trucks/truck-detail.component').then(m => m.TruckDetailComponent),
   },
 
+  // Admin (protected)
   {
     path: 'admin',
     canActivate: [adminGuard],
     loadComponent: () => import('./features/admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
       {
+        path: 'dashboard',
+        loadComponent: () => import('./features/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+      },
+      {
         path: 'trucks',
         loadComponent: () => import('./features/admin/trucks/admin-trucks.component').then(m => m.AdminTrucksComponent),
+      },
+      {
+        path: 'bookings',
+        loadComponent: () => import('./features/admin/bookings/admin-bookings.component').then(m => m.AdminBookingsComponent),
+      },
+      {
+        path: 'locations',
+        loadComponent: () => import('./features/admin/locations/admin-locations.component').then(m => m.AdminLocationsComponent),
       },
       {
         path: 'drivers',
@@ -48,23 +58,29 @@ export const routes: Routes = [
         path: 'missions',
         loadComponent: () => import('./features/admin/missions/admin-missions.component').then(m => m.AdminMissionsComponent),
       },
-      { path: '', redirectTo: 'trucks', pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
 
+  // Owner (protected)
   {
     path: 'owner',
     canActivate: [ownerGuard],
     loadComponent: () => import('./features/owner/layout/owner-layout.component').then(m => m.OwnerLayoutComponent),
     children: [
       {
+        path: 'dashboard',
+        loadComponent: () => import('./features/owner/dashboard/owner-dashboard.component').then(m => m.OwnerDashboardComponent),
+      },
+      {
         path: 'trucks',
         loadComponent: () => import('./features/owner/trucks/owner-trucks.component').then(m => m.OwnerTrucksComponent),
       },
-      { path: '', redirectTo: 'trucks', pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
 
+  // Client (protected)
   {
     path: 'client',
     canActivate: [clientGuard],
@@ -75,6 +91,14 @@ export const routes: Routes = [
         loadComponent: () => import('./features/client/trucks/client-trucks.component').then(m => m.ClientTrucksComponent),
       },
       {
+        path: 'book',
+        loadComponent: () => import('./features/client/bookings/create-booking.component').then(m => m.CreateBookingComponent),
+      },
+      {
+        path: 'bookings',
+        loadComponent: () => import('./features/client/bookings/my-bookings.component').then(m => m.MyBookingsComponent),
+      },
+      {
         path: 'contracts',
         loadComponent: () => import('./features/client/contracts/client-contracts.component').then(m => m.ClientContractsComponent),
       },
@@ -82,5 +106,5 @@ export const routes: Routes = [
     ],
   },
 
-  { path: '**', redirectTo: '/auth/login' },
+  { path: '**', redirectTo: '/' },
 ];

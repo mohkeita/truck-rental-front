@@ -15,10 +15,15 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
 
         <nav class="flex-1 py-4">
+          <a routerLink="/owner/dashboard" routerLinkActive="text-orange-400 bg-gray-800"
+            class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
+            <span class="text-xl">📊</span>
+            <span class="text-sm font-medium">Tableau de bord</span>
+          </a>
           <a routerLink="/owner/trucks" routerLinkActive="text-orange-400 bg-gray-800"
             class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
             <span class="text-xl">🚛</span>
-            <span class="text-sm font-medium">My Trucks</span>
+            <span class="text-sm font-medium">Mes camions</span>
           </a>
         </nav>
 
@@ -29,19 +34,19 @@ import { AuthService } from '../../../core/services/auth.service';
             </div>
             <div>
               <p class="text-sm font-medium">{{ username() }}</p>
-              <p class="text-xs text-gray-400">Truck Owner</p>
+              <p class="text-xs text-gray-400">Propriétaire</p>
             </div>
           </div>
           <button (click)="logout()"
             class="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors text-sm">
-            <span>🚪</span> Logout
+            <span>🚪</span> Déconnexion
           </button>
         </div>
       </aside>
 
       <div class="flex-1 flex flex-col overflow-hidden">
         <header class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-          <h2 class="text-xl font-bold text-gray-900">Owner Portal</h2>
+          <h2 class="text-xl font-bold text-gray-900">Espace Propriétaire</h2>
         </header>
         <main class="flex-1 overflow-y-auto p-6">
           <router-outlet />

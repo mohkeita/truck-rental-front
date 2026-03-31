@@ -12,12 +12,12 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
     <div>
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">My Trucks</h1>
-          <p class="text-gray-500 text-sm mt-1">Manage your fleet and track approval status</p>
+          <h1 class="text-2xl font-bold text-gray-900">Mes camions</h1>
+          <p class="text-gray-500 text-sm mt-1">Gérez votre flotte et suivez le statut de validation</p>
         </div>
         <button (click)="showForm.set(true)"
           class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
-          + Submit Truck
+          + Soumettre un camion
         </button>
       </div>
 
@@ -25,15 +25,15 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
       <div class="grid grid-cols-3 gap-4 mb-6">
         <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm text-center">
           <div class="text-2xl font-bold text-gray-900">{{ totalTrucks() }}</div>
-          <div class="text-sm text-gray-500">Total Trucks</div>
+          <div class="text-sm text-gray-500">Total camions</div>
         </div>
         <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm text-center">
           <div class="text-2xl font-bold text-green-600">{{ availableTrucks() }}</div>
-          <div class="text-sm text-gray-500">Available</div>
+          <div class="text-sm text-gray-500">Disponibles</div>
         </div>
         <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm text-center">
           <div class="text-2xl font-bold text-yellow-600">{{ pendingTrucks() }}</div>
-          <div class="text-sm text-gray-500">Pending Approval</div>
+          <div class="text-sm text-gray-500">En attente</div>
         </div>
       </div>
 
@@ -49,20 +49,20 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
               <app-status-badge [status]="truck.status" />
             </div>
             <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
-              <div>🚛 {{ truck.capacityTons }} tons</div>
+              <div>🚛 {{ truck.capacityTons }} tonnes</div>
               <div>📅 {{ truck.year }}</div>
             </div>
             @if (truck.rejectionReason) {
               <div class="mt-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
-                <strong>Rejected:</strong> {{ truck.rejectionReason }}
+                <strong>Refusé :</strong> {{ truck.rejectionReason }}
               </div>
             }
           </div>
         } @empty {
           <div class="col-span-3 py-16 text-center text-gray-400">
             <div class="text-4xl mb-3">🚛</div>
-            <p class="text-lg font-medium">No trucks yet</p>
-            <p class="text-sm">Submit your first truck for approval</p>
+            <p class="text-lg font-medium">Aucun camion</p>
+            <p class="text-sm">Soumettez votre premier camion pour validation</p>
           </div>
         }
       </div>
@@ -72,35 +72,35 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
     @if (showForm()) {
       <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-          <h3 class="text-lg font-bold mb-1">Submit a Truck</h3>
-          <p class="text-sm text-gray-500 mb-4">Your truck will be reviewed by an administrator</p>
+          <h3 class="text-lg font-bold mb-1">Soumettre un camion</h3>
+          <p class="text-sm text-gray-500 mb-4">Votre camion sera examiné par un administrateur</p>
           <form (ngSubmit)="submit()" #truckForm="ngForm">
             <div class="grid grid-cols-2 gap-3">
               <div class="col-span-2">
-                <label class="block text-xs font-medium text-gray-600 mb-1">License Plate *</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Immatriculation *</label>
                 <input type="text" name="licensePlate" [(ngModel)]="form.licensePlate" required
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  placeholder="e.g. AA-123-BB" />
+                  placeholder="ex. AA-123-BB" />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Brand *</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Marque *</label>
                 <input type="text" name="brand" [(ngModel)]="form.brand" required
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  placeholder="e.g. Volvo" />
+                  placeholder="ex. Volvo" />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Model *</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Modèle *</label>
                 <input type="text" name="model" [(ngModel)]="form.model" required
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  placeholder="e.g. FH16" />
+                  placeholder="ex. FH16" />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Capacity (tons) *</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Capacité (tonnes) *</label>
                 <input type="number" name="capacityTons" [(ngModel)]="form.capacityTons" required min="0.5" step="0.5"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Year *</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Année *</label>
                 <input type="number" name="year" [(ngModel)]="form.year" required min="1990" max="2030"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
               </div>
@@ -108,11 +108,11 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
             <div class="flex gap-3 mt-5">
               <button type="submit" [disabled]="!truckForm.form.valid"
                 class="flex-1 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white rounded-lg font-medium transition-colors">
-                Submit for Approval
+                Soumettre pour validation
               </button>
               <button type="button" (click)="showForm.set(false)"
                 class="flex-1 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                Cancel
+                Annuler
               </button>
             </div>
           </form>

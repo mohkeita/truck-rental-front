@@ -1,114 +1,116 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 interface NavItem {
-  path: string;
-  label: string;
   icon: string;
+  label: string;
+  route: string;
 }
 
 @Component({
   selector: 'app-admin-layout',
+  standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    <div class="flex h-screen bg-gray-50">
+    <div class="flex min-h-screen bg-background">
+
       <!-- Sidebar -->
       <aside [class]="sidebarOpen() ? 'w-64' : 'w-16'"
-             class="bg-gray-900 text-white flex flex-col transition-all duration-300 relative">
+        class="bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 flex-shrink-0">
+
         <!-- Logo -->
-        <div class="flex items-center gap-3 px-4 py-5 border-b border-gray-700">
-          <span class="text-2xl">🚛</span>
+        <div class="h-16 flex items-center px-4 border-b border-sidebar-border gap-3">
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 glow-amber">
+            <span class="text-base">🚛</span>
+          </div>
           @if (sidebarOpen()) {
-            <span class="font-bold text-lg">TruckAdmin</span>
+            <span class="font-heading font-bold text-foreground uppercase tracking-wide text-sm whitespace-nowrap overflow-hidden">TruckAdmin</span>
           }
         </div>
 
-        <!-- Nav items -->
-        <nav class="flex-1 py-4 overflow-y-auto">
-          @for (item of navItems; track item.path) {
-            <a
-              [routerLink]="item.path"
-              routerLinkActive="text-orange-400 bg-gray-800"
-              class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
-            >
-              <span class="text-xl flex-shrink-0">{{ item.icon }}</span>
+        <!-- Nav -->
+        <nav class="flex-1 py-4 px-2 space-y-1">
+          @for (item of navItems; track item.route) {
+            <a [routerLink]="item.route" routerLinkActive="bg-sidebar-accent text-sidebar-primary"
+              class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors cursor-pointer"
+              [title]="!sidebarOpen() ? item.label : ''">
+              <span class="text-lg flex-shrink-0">{{ item.icon }}</span>
               @if (sidebarOpen()) {
-                <span class="text-sm font-medium">{{ item.label }}</span>
+                <span class="text-sm font-medium whitespace-nowrap overflow-hidden">{{ item.label }}</span>
               }
             </a>
           }
         </nav>
 
-        <!-- Toggle button -->
-        <button
-          (click)="sidebarOpen.set(!sidebarOpen())"
-          class="absolute -right-3 top-20 bg-gray-900 border border-gray-700 rounded-full w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white text-xs"
-        >
-          {{ sidebarOpen() ? '◀' : '▶' }}
-        </button>
-
-        <!-- User section -->
-        <div class="border-t border-gray-700 p-4">
+        <!-- User + Logout -->
+        <div class="border-t border-sidebar-border p-3 space-y-1">
           @if (sidebarOpen()) {
-            <div class="flex items-center gap-2 mb-2">
-              <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-sm font-bold">
+            <div class="flex items-center gap-3 px-2 py-2">
+              <div class="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">
                 {{ userInitial() }}
               </div>
-              <div>
-                <p class="text-sm font-medium">{{ username() }}</p>
-                <p class="text-xs text-gray-400">Administrator</p>
-              </div>
+              <span class="text-xs text-sidebar-foreground font-medium truncate">{{ username() }}</span>
             </div>
           }
-          <button
-            (click)="logout()"
-            class="flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors text-sm w-full"
-          >
-            <span>🚪</span>
-            @if (sidebarOpen()) { <span>Logout</span> }
+          <button (click)="logout()"
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+            [title]="!sidebarOpen() ? 'Déconnexion' : ''">
+            <span class="text-base flex-shrink-0">🚪</span>
+            @if (sidebarOpen()) {
+              <span class="text-sm font-medium">Déconnexion</span>
+            }
+          </button>
+          <button (click)="sidebarOpen.set(!sidebarOpen())"
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="text-base flex-shrink-0">{{ sidebarOpen() ? '◀' : '▶' }}</span>
+            @if (sidebarOpen()) {
+              <span class="text-sm font-medium">Réduire</span>
+            }
           </button>
         </div>
       </aside>
 
-      <!-- Main content -->
-      <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Header -->
-        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
-          <h2 class="text-xl font-bold text-gray-900">Admin Dashboard</h2>
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-sm font-bold">
+      <!-- Main -->
+      <main class="flex-1 flex flex-col min-w-0">
+        <header class="h-16 border-b border-border flex items-center justify-between px-6 bg-card/50 backdrop-blur-sm">
+          <h1 class="text-lg font-heading font-bold text-gradient uppercase tracking-wide">Administration</h1>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">
               {{ userInitial() }}
             </div>
-            <span class="text-sm text-gray-600">{{ username() }}</span>
+            <span class="text-sm text-muted-foreground">{{ username() }}</span>
           </div>
         </header>
-
-        <!-- Page content -->
-        <main class="flex-1 overflow-y-auto p-6">
+        <div class="flex-1 p-6 overflow-auto">
           <router-outlet />
-        </main>
-      </div>
+        </div>
+      </main>
+
     </div>
   `,
 })
 export class AdminLayoutComponent {
-  private authService = inject(AuthService);
   sidebarOpen = signal(true);
 
   navItems: NavItem[] = [
-    { path: '/admin/trucks', label: 'Trucks', icon: '🚛' },
-    { path: '/admin/drivers', label: 'Drivers', icon: '👨‍✈️' },
-    { path: '/admin/clients', label: 'Clients', icon: '👥' },
-    { path: '/admin/contracts', label: 'Contracts', icon: '📄' },
-    { path: '/admin/invoices', label: 'Invoices', icon: '💰' },
-    { path: '/admin/missions', label: 'Missions', icon: '📍' },
+    { icon: '📊', label: 'Tableau de bord', route: '/admin/dashboard' },
+    { icon: '🚛', label: 'Camions', route: '/admin/trucks' },
+    { icon: '📋', label: 'Réservations', route: '/admin/bookings' },
+    { icon: '📍', label: 'Lieux', route: '/admin/locations' },
+    { icon: '👨‍✈️', label: 'Chauffeurs', route: '/admin/drivers' },
+    { icon: '👥', label: 'Clients', route: '/admin/clients' },
+    { icon: '📄', label: 'Contrats', route: '/admin/contracts' },
+    { icon: '💰', label: 'Factures', route: '/admin/invoices' },
+    { icon: '🗺️', label: 'Missions', route: '/admin/missions' },
   ];
 
-  username = () => this.authService.currentUser()?.username ?? '';
-  userInitial = () => this.username().charAt(0).toUpperCase();
+  constructor(private authService: AuthService) {}
 
-  logout(): void {
+  username = computed(() => this.authService.currentUser()?.username ?? '');
+  userInitial = computed(() => this.username().charAt(0).toUpperCase());
+
+  logout() {
     this.authService.logout();
   }
 }

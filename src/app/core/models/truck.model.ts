@@ -16,6 +16,20 @@ export interface TruckResponse {
   status: TruckStatus;
   ownerUsername: string;
   rejectionReason?: string;
+  pricePerDay?: number;
+  transmission?: string;
+  fuel?: string;
+  airConditioning?: boolean;
+  gps?: boolean;
+  bluetooth?: boolean;
+  cruiseControl?: boolean;
+  parkingSensors?: boolean;
+  seats?: number;
+  featured?: boolean;
+  description?: string;
+  photoUrls?: string[];
+  currency?: string;
+  horsepower?: number;
 }
 
 export interface TruckRequest {
@@ -24,6 +38,17 @@ export interface TruckRequest {
   model: string;
   capacityTons: number;
   year: number;
+  pricePerDay?: number;
+  transmission?: string;
+  fuel?: string;
+  airConditioning?: boolean;
+  gps?: boolean;
+  bluetooth?: boolean;
+  cruiseControl?: boolean;
+  parkingSensors?: boolean;
+  seats?: number;
+  description?: string;
+  horsepower?: number;
 }
 
 export interface RejectRequest {

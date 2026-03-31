@@ -17,6 +17,14 @@ export class TruckService {
     return this.http.get<PageResponse<TruckResponse>>(`${this.base}/available?page=${page}&size=${size}`);
   }
 
+  getById(id: number) {
+    return this.http.get<TruckResponse>(`${this.base}/${id}`);
+  }
+
+  getAvailableById(id: number) {
+    return this.http.get<TruckResponse>(`${this.base}/available/${id}`);
+  }
+
   create(truck: TruckRequest) {
     return this.http.post<TruckResponse>(this.base, truck);
   }
