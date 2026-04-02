@@ -30,7 +30,7 @@ import { RouterLink } from '@angular/router';
             <h3 class="text-sm font-semibold text-foreground mb-4">Contact</h3>
             <ul class="space-y-2 text-sm text-muted-foreground">
               <li>support&#64;truckrental.com</li>
-              <li>+1 (555) 123-4567</li>
+              <li>+224 492 08 38 00</li>
               <li>Support client 24h/24</li>
             </ul>
           </div>
