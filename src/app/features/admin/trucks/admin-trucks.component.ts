@@ -76,11 +76,11 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
             <span class="text-sm text-muted-foreground">Page {{ currentPage() + 1 }} sur {{ totalPages() }}</span>
             <div class="flex gap-2">
               <button (click)="changePage(currentPage() - 1)" [disabled]="currentPage() === 0"
-                class="px-3 py-1.5 rounded-md bg-secondary text-foreground text-sm disabled:opacity-40 hover:bg-muted transition-colors">
+                class="px-3 py-1.5 rounded-md border border-border text-foreground text-sm font-medium disabled:opacity-40 hover:bg-primary/10 hover:text-primary transition-colors">
                 Précédent
               </button>
               <button (click)="changePage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1"
-                class="px-3 py-1.5 rounded-md bg-secondary text-foreground text-sm disabled:opacity-40 hover:bg-muted transition-colors">
+                class="px-3 py-1.5 rounded-md border border-border text-foreground text-sm font-medium disabled:opacity-40 hover:bg-primary/10 hover:text-primary transition-colors">
                 Suivant
               </button>
             </div>
