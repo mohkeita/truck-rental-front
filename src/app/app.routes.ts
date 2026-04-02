@@ -99,6 +99,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/client/bookings/my-bookings.component').then(m => m.MyBookingsComponent),
       },
       {
+        path: 'payment-result',
+        loadComponent: () => import('./features/client/bookings/payment-result.component').then(m => m.PaymentResultComponent),
+      },
+      {
         path: 'contracts',
         loadComponent: () => import('./features/client/contracts/client-contracts.component').then(m => m.ClientContractsComponent),
       },

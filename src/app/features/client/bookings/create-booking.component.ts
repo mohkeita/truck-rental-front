@@ -5,6 +5,7 @@ import { DecimalPipe } from '@angular/common';
 import { BookingService } from '../../../core/services/booking.service';
 import { LocationService } from '../../../core/services/location.service';
 import { TruckService } from '../../../core/services/truck.service';
+import { PaymentService } from '../../../core/services/payment.service';
 import { LocationResponse } from '../../../core/models/location.model';
 import { TruckResponse } from '../../../core/models/truck.model';
 import { BookingRequest, ExtraRequest } from '../../../core/models/booking.model';
@@ -114,7 +115,7 @@ import { BookingRequest, ExtraRequest } from '../../../core/models/booking.model
           </button>
           <button type="submit" [disabled]="submitting()"
             class="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors text-sm disabled:opacity-50">
-            {{ submitting() ? 'Réservation...' : 'Confirmer la réservation' }}
+            {{ submitting() ? 'Traitement...' : 'Réserver et payer' }}
           </button>
         </div>
       </form>
@@ -133,6 +134,7 @@ export class CreateBookingComponent implements OnInit {
   private bookingService = inject(BookingService);
   private locationService = inject(LocationService);
   private truckService = inject(TruckService);
+  private paymentService = inject(PaymentService);
 
   truck = signal<TruckResponse | null>(null);
   locations = signal<LocationResponse[]>([]);
@@ -185,9 +187,21 @@ export class CreateBookingComponent implements OnInit {
     };
 
     this.bookingService.create(request).subscribe({
-      next: () => {
-        this.submitting.set(false);
-        this.router.navigate(['/client/bookings']);
+      next: (booking) => {
+        // Initiate payment after booking creation
+        this.paymentService.initiatePayment(booking.id).subscribe({
+          next: (payment) => {
+            this.submitting.set(false);
+            // Redirect to CinetPay payment page
+            window.location.href = payment.paymentUrl;
+          },
+          error: (err) => {
+            this.submitting.set(false);
+            this.error.set(err.error?.message || err.error?.error || 'Échec de l\'initialisation du paiement. Vous pouvez réessayer depuis vos réservations.');
+            // Booking was created but payment failed — user can retry from bookings list
+            this.router.navigate(['/client/bookings']);
+          },
+        });
       },
       error: (err) => {
         this.submitting.set(false);
