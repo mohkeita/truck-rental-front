@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingService } from '../../../core/services/booking.service';
+import { PaymentService } from '../../../core/services/payment.service';
 import { BookingResponse, BookingStatus } from '../../../core/models/booking.model';
 
 @Component({
@@ -17,18 +18,18 @@ import { BookingResponse, BookingStatus } from '../../../core/models/booking.mod
       <div class="space-y-4">
         @for (booking of bookings(); track booking.id) {
           <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-            <div class="flex items-start justify-between mb-3">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
               <div>
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-2">
                   <h3 class="font-bold text-gray-900">{{ booking.truckName }}</h3>
                   <span [class]="statusClass(booking.status)"
                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                    {{ booking.status }}
+                    {{ statusLabel(booking.status) }}
                   </span>
                 </div>
                 <p class="text-sm text-gray-500 mt-1">Réf : {{ booking.bookingReference }}</p>
               </div>
-              <p class="text-xl font-bold text-gray-900">{{ booking.totalPrice | number:'1.0-0' }} GNF</p>
+              <p class="text-xl font-bold text-gray-900 shrink-0">{{ booking.totalPrice | number:'1.0-0' }} GNF</p>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
@@ -66,24 +67,32 @@ import { BookingResponse, BookingStatus } from '../../../core/models/booking.mod
             }
 
             @if (booking.status !== 'COMPLETED' && booking.status !== 'CANCELLED') {
-              <div class="flex justify-end">
+              <div class="flex justify-end gap-2">
+                @if (booking.status === 'PENDING_PAYMENT') {
+                  <button (click)="retryPayment(booking.id)" [disabled]="payingBookingId() === booking.id"
+                    class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50">
+                    {{ payingBookingId() === booking.id ? 'Redirection...' : 'Payer maintenant' }}
+                  </button>
+                }
                 @if (!showCancelInput() || cancelBookingId() !== booking.id) {
                   <button (click)="openCancel(booking.id)"
                     class="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">
                     Annuler la réservation
                   </button>
                 } @else {
-                  <div class="flex gap-2 items-end">
+                  <div class="flex flex-col sm:flex-row gap-2 sm:items-end">
                     <input [(ngModel)]="cancelReason" name="cancelReason" placeholder="Motif (facultatif)"
-                      class="h-9 rounded-lg border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
-                    <button (click)="confirmCancel()"
-                      class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors">
-                      Confirmer
-                    </button>
-                    <button (click)="showCancelInput.set(false)"
-                      class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                      Retour
-                    </button>
+                      class="h-9 rounded-lg border border-gray-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 w-full sm:w-auto" />
+                    <div class="flex gap-2">
+                      <button (click)="confirmCancel()"
+                        class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors">
+                        Confirmer
+                      </button>
+                      <button (click)="showCancelInput.set(false)"
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                        Retour
+                      </button>
+                    </div>
                   </div>
                 }
               </div>
@@ -108,7 +117,7 @@ import { BookingResponse, BookingStatus } from '../../../core/models/booking.mod
             class="px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-40 hover:bg-gray-50">
             Précédent
           </button>
-          <span class="text-sm text-gray-500">Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
+          <span class="text-sm text-gray-500">Page {{ currentPage() + 1 }} sur {{ totalPages() }}</span>
           <button (click)="changePage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1"
             class="px-4 py-2 border border-gray-300 rounded-lg text-sm disabled:opacity-40 hover:bg-gray-50">
             Suivant
@@ -120,6 +129,7 @@ import { BookingResponse, BookingStatus } from '../../../core/models/booking.mod
 })
 export class MyBookingsComponent implements OnInit {
   private bookingService = inject(BookingService);
+  private paymentService = inject(PaymentService);
 
   bookings = signal<BookingResponse[]>([]);
   currentPage = signal(0);
@@ -127,6 +137,7 @@ export class MyBookingsComponent implements OnInit {
   showCancelInput = signal(false);
   cancelBookingId = signal(0);
   cancelReason = '';
+  payingBookingId = signal(0);
 
   ngOnInit(): void { this.load(); }
 
@@ -150,9 +161,34 @@ export class MyBookingsComponent implements OnInit {
     });
   }
 
+  retryPayment(bookingId: number): void {
+    this.payingBookingId.set(bookingId);
+    this.paymentService.initiatePayment(bookingId).subscribe({
+      next: (payment) => {
+        window.location.href = payment.paymentUrl;
+      },
+      error: () => {
+        this.payingBookingId.set(0);
+      },
+    });
+  }
+
+  statusLabel(status: BookingStatus): string {
+    const labels: Record<BookingStatus, string> = {
+      PENDING: 'En attente',
+      PENDING_PAYMENT: 'En attente de paiement',
+      CONFIRMED: 'Confirmée',
+      ACTIVE: 'En cours',
+      COMPLETED: 'Terminée',
+      CANCELLED: 'Annulée',
+    };
+    return labels[status] ?? status;
+  }
+
   statusClass(status: BookingStatus): string {
     const map: Record<BookingStatus, string> = {
       PENDING: 'bg-yellow-100 text-yellow-800',
+      PENDING_PAYMENT: 'bg-orange-100 text-orange-800',
       CONFIRMED: 'bg-blue-100 text-blue-800',
       ACTIVE: 'bg-green-100 text-green-800',
       COMPLETED: 'bg-gray-100 text-gray-800',

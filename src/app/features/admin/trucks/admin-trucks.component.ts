@@ -13,26 +13,26 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-3xl font-heading font-bold text-gradient uppercase">Trucks</h1>
-          <p class="text-muted-foreground text-sm mt-1">Manage the truck fleet</p>
+          <h1 class="text-3xl font-heading font-bold text-gradient uppercase">Camions</h1>
+          <p class="text-muted-foreground text-sm mt-1">Gérer la flotte de camions</p>
         </div>
         <button (click)="openAddModal()"
           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium font-heading uppercase tracking-wide hover:bg-primary/90 transition-colors">
-          <span>+</span> Add Truck
+          <span>+</span> Ajouter un camion
         </button>
       </div>
 
       <!-- Table -->
-      <div class="glass-card rounded-xl overflow-hidden">
-        <table class="w-full">
+      <div class="glass-card rounded-xl overflow-x-auto">
+        <table class="w-full min-w-[800px]">
           <thead>
             <tr class="border-b border-border">
-              <th class="text-left p-4 text-sm text-muted-foreground font-medium">License Plate</th>
-              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Brand / Model</th>
-              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Capacity</th>
-              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Year</th>
-              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Owner</th>
-              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Status</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Immatriculation</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Marque / Modèle</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Capacité</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Année</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Propriétaire</th>
+              <th class="text-left p-4 text-sm text-muted-foreground font-medium">Statut</th>
               <th class="text-right p-4 text-sm text-muted-foreground font-medium">Actions</th>
             </tr>
           </thead>
@@ -52,11 +52,11 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                     @if (truck.status === 'PENDING_VALIDATION') {
                       <button (click)="approve(truck)"
                         class="h-8 px-3 rounded-md bg-success/20 text-success border border-success/30 text-xs font-medium hover:bg-success/30 transition-colors">
-                        ✓ Approve
+                        ✓ Approuver
                       </button>
                       <button (click)="openRejectModal(truck)"
                         class="h-8 px-3 rounded-md bg-destructive/20 text-destructive border border-destructive/30 text-xs font-medium hover:bg-destructive/30 transition-colors">
-                        ✗ Reject
+                        ✗ Rejeter
                       </button>
                     }
                   </div>
@@ -64,7 +64,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
               </tr>
             } @empty {
               <tr>
-                <td colspan="7" class="p-8 text-center text-muted-foreground text-sm">No trucks found</td>
+                <td colspan="7" class="p-8 text-center text-muted-foreground text-sm">Aucun camion trouvé</td>
               </tr>
             }
           </tbody>
@@ -73,15 +73,15 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
         <!-- Pagination -->
         @if (totalPages() > 1) {
           <div class="flex items-center justify-between p-4 border-t border-border">
-            <span class="text-sm text-muted-foreground">Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
+            <span class="text-sm text-muted-foreground">Page {{ currentPage() + 1 }} sur {{ totalPages() }}</span>
             <div class="flex gap-2">
               <button (click)="changePage(currentPage() - 1)" [disabled]="currentPage() === 0"
                 class="px-3 py-1.5 rounded-md bg-secondary text-foreground text-sm disabled:opacity-40 hover:bg-muted transition-colors">
-                ← Prev
+                Précédent
               </button>
               <button (click)="changePage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1"
                 class="px-3 py-1.5 rounded-md bg-secondary text-foreground text-sm disabled:opacity-40 hover:bg-muted transition-colors">
-                Next →
+                Suivant
               </button>
             </div>
           </div>
@@ -92,16 +92,16 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
       @if (showRejectModal()) {
         <div class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" (click)="showRejectModal.set(false)">
           <div class="glass-card rounded-xl p-6 w-full max-w-md" (click)="$event.stopPropagation()">
-            <h3 class="text-lg font-heading font-bold text-foreground uppercase mb-1">Reject Truck</h3>
-            <p class="text-sm text-muted-foreground mb-4">Provide a reason for rejecting <strong class="text-foreground">{{ selectedTruck()?.licensePlate }}</strong></p>
-            <textarea [(ngModel)]="rejectReason" rows="3" placeholder="Reason for rejection..."
+            <h3 class="text-lg font-heading font-bold text-foreground uppercase mb-1">Rejeter le camion</h3>
+            <p class="text-sm text-muted-foreground mb-4">Indiquez le motif du rejet de <strong class="text-foreground">{{ selectedTruck()?.licensePlate }}</strong></p>
+            <textarea [(ngModel)]="rejectReason" rows="3" placeholder="Motif du rejet..."
               class="w-full rounded-md border border-input bg-secondary px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none mb-4"></textarea>
             <div class="flex gap-3 justify-end">
               <button (click)="showRejectModal.set(false)"
-                class="px-4 py-2 rounded-md border border-border text-foreground text-sm hover:bg-muted transition-colors">Cancel</button>
+                class="px-4 py-2 rounded-md border border-border text-foreground text-sm hover:bg-muted transition-colors">Annuler</button>
               <button (click)="confirmReject()" [disabled]="!rejectReason.trim()"
                 class="px-4 py-2 rounded-md bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors">
-                Confirm Reject
+                Confirmer le rejet
               </button>
             </div>
           </div>
@@ -112,43 +112,43 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
       @if (showAddModal()) {
         <div class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" (click)="showAddModal.set(false)">
           <div class="glass-card rounded-xl p-6 w-full max-w-md" (click)="$event.stopPropagation()">
-            <h3 class="text-lg font-heading font-bold text-foreground uppercase mb-4">Add Truck</h3>
+            <h3 class="text-lg font-heading font-bold text-foreground uppercase mb-4">Ajouter un camion</h3>
             <form (ngSubmit)="submitAdd()" class="space-y-3">
               <div>
-                <label class="block text-xs font-medium text-muted-foreground mb-1">License Plate</label>
+                <label class="block text-xs font-medium text-muted-foreground mb-1">Immatriculation</label>
                 <input [(ngModel)]="newTruck.licensePlate" name="licensePlate" required
                   class="w-full h-9 rounded-md border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs font-medium text-muted-foreground mb-1">Brand</label>
+                  <label class="block text-xs font-medium text-muted-foreground mb-1">Marque</label>
                   <input [(ngModel)]="newTruck.brand" name="brand" required
                     class="w-full h-9 rounded-md border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-muted-foreground mb-1">Model</label>
+                  <label class="block text-xs font-medium text-muted-foreground mb-1">Modèle</label>
                   <input [(ngModel)]="newTruck.model" name="model" required
                     class="w-full h-9 rounded-md border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs font-medium text-muted-foreground mb-1">Capacity (tons)</label>
+                  <label class="block text-xs font-medium text-muted-foreground mb-1">Capacité (tonnes)</label>
                   <input type="number" [(ngModel)]="newTruck.capacityTons" name="capacityTons" required
                     class="w-full h-9 rounded-md border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-muted-foreground mb-1">Year</label>
+                  <label class="block text-xs font-medium text-muted-foreground mb-1">Année</label>
                   <input type="number" [(ngModel)]="newTruck.year" name="year" required
                     class="w-full h-9 rounded-md border border-input bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
               </div>
               <div class="flex gap-3 justify-end pt-2">
                 <button type="button" (click)="showAddModal.set(false)"
-                  class="px-4 py-2 rounded-md border border-border text-foreground text-sm hover:bg-muted transition-colors">Cancel</button>
+                  class="px-4 py-2 rounded-md border border-border text-foreground text-sm hover:bg-muted transition-colors">Annuler</button>
                 <button type="submit"
                   class="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
-                  Add Truck
+                  Ajouter
                 </button>
               </div>
             </form>

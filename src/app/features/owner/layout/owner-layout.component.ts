@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -6,21 +6,28 @@ import { AuthService } from '../../../core/services/auth.service';
   selector: 'app-owner-layout',
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    <div class="flex h-screen bg-gray-50">
+    <div class="flex min-h-screen bg-gray-50">
+
+      <!-- Mobile overlay -->
+      @if (sidebarOpen()) {
+        <div class="fixed inset-0 bg-black/50 z-20 md:hidden" (click)="sidebarOpen.set(false)"></div>
+      }
+
       <!-- Sidebar -->
-      <aside class="w-64 bg-gray-900 text-white flex flex-col">
+      <aside [class.translate-x-0]="sidebarOpen()"
+        class="fixed inset-y-0 left-0 z-30 w-64 -translate-x-full bg-gray-900 text-white flex flex-col transition-transform duration-300 md:translate-x-0 md:static md:z-auto">
         <div class="flex items-center gap-3 px-4 py-5 border-b border-gray-700">
           <span class="text-2xl">🚛</span>
           <span class="font-bold text-lg">TruckOwner</span>
         </div>
 
         <nav class="flex-1 py-4">
-          <a routerLink="/owner/dashboard" routerLinkActive="text-orange-400 bg-gray-800"
+          <a routerLink="/owner/dashboard" routerLinkActive="text-orange-400 bg-gray-800" (click)="closeMobile()"
             class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
             <span class="text-xl">📊</span>
             <span class="text-sm font-medium">Tableau de bord</span>
           </a>
-          <a routerLink="/owner/trucks" routerLinkActive="text-orange-400 bg-gray-800"
+          <a routerLink="/owner/trucks" routerLinkActive="text-orange-400 bg-gray-800" (click)="closeMobile()"
             class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
             <span class="text-xl">🚛</span>
             <span class="text-sm font-medium">Mes camions</span>
@@ -44,11 +51,16 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
       </aside>
 
-      <div class="flex-1 flex flex-col overflow-hidden">
-        <header class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-          <h2 class="text-xl font-bold text-gray-900">Espace Propriétaire</h2>
+      <div class="flex-1 flex flex-col min-w-0">
+        <header class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 shadow-sm flex items-center gap-3">
+          <button (click)="sidebarOpen.set(!sidebarOpen())" class="md:hidden text-gray-600 hover:text-gray-900">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          <h2 class="text-lg sm:text-xl font-bold text-gray-900">Espace Propriétaire</h2>
         </header>
-        <main class="flex-1 overflow-y-auto p-6">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6">
           <router-outlet />
         </main>
       </div>
@@ -57,7 +69,9 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class OwnerLayoutComponent {
   private authService = inject(AuthService);
+  sidebarOpen = signal(false);
   username = () => this.authService.currentUser()?.username ?? '';
   userInitial = () => this.username().charAt(0).toUpperCase();
   logout(): void { this.authService.logout(); }
+  closeMobile(): void { this.sidebarOpen.set(false); }
 }

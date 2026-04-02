@@ -13,8 +13,8 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
         <h1 class="text-2xl font-bold text-gray-900">Gestion des factures</h1>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table class="w-full">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+        <table class="w-full min-w-[800px]">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
               <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">#</th>

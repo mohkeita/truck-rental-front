@@ -13,8 +13,8 @@ import { BookingResponse, BookingStatus } from '../../../core/models/booking.mod
         <p class="text-muted-foreground text-sm mt-1">Gérer toutes les réservations clients</p>
       </div>
 
-      <div class="glass-card rounded-xl overflow-hidden">
-        <table class="w-full">
+      <div class="glass-card rounded-xl overflow-x-auto">
+        <table class="w-full min-w-[800px]">
           <thead>
             <tr class="border-b border-border">
               <th class="text-left p-4 text-sm text-muted-foreground font-medium">Référence</th>
@@ -43,7 +43,7 @@ import { BookingResponse, BookingStatus } from '../../../core/models/booking.mod
                 <td class="p-4">
                   <span [class]="statusClass(booking.status)"
                     class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                    {{ booking.status }}
+                    {{ statusLabel(booking.status) }}
                   </span>
                 </td>
                 <td class="p-4">
@@ -135,9 +135,22 @@ export class AdminBookingsComponent implements OnInit {
     this.bookingService.cancel(id).subscribe({ next: () => this.load() });
   }
 
+  statusLabel(status: BookingStatus): string {
+    const labels: Record<BookingStatus, string> = {
+      PENDING: 'En attente',
+      PENDING_PAYMENT: 'En attente de paiement',
+      CONFIRMED: 'Confirmée',
+      ACTIVE: 'En cours',
+      COMPLETED: 'Terminée',
+      CANCELLED: 'Annulée',
+    };
+    return labels[status] ?? status;
+  }
+
   statusClass(status: BookingStatus): string {
     const map: Record<BookingStatus, string> = {
       PENDING: 'bg-yellow-500/20 text-yellow-400',
+      PENDING_PAYMENT: 'bg-orange-500/20 text-orange-400',
       CONFIRMED: 'bg-blue-500/20 text-blue-400',
       ACTIVE: 'bg-green-500/20 text-green-400',
       COMPLETED: 'bg-primary/20 text-primary',
