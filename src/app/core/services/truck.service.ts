@@ -40,4 +40,10 @@ export class TruckService {
   delete(id: number) {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
+
+  uploadPhotos(id: number, files: File[]) {
+    const formData = new FormData();
+    files.forEach(f => formData.append('files', f));
+    return this.http.post<string[]>(`${this.base}/${id}/photos`, formData);
+  }
 }

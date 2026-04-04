@@ -5,6 +5,10 @@ import { AuthService } from '../../../core/services/auth.service';
 import { TruckResponse, TruckRequest } from '../../../core/models/truck.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
+interface TruckFormData extends TruckRequest {
+  pricePerDay?: number;
+}
+
 @Component({
   selector: 'app-owner-trucks',
   imports: [FormsModule, StatusBadgeComponent],
@@ -15,11 +19,17 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
           <h1 class="text-2xl font-bold text-gray-900">Mes camions</h1>
           <p class="text-gray-500 text-sm mt-1">Gérez votre flotte et suivez le statut de validation</p>
         </div>
-        <button (click)="showForm.set(true)"
+        <button (click)="openForm()"
           class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
           + Soumettre un camion
         </button>
       </div>
+
+      @if (notification(); as notif) {
+        <div [class]="'mb-4 p-3 rounded-lg text-sm ' + (notif.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : notif.type === 'warning' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' : 'bg-red-50 text-red-700 border border-red-200')">
+          {{ notif.message }}
+        </div>
+      }
 
       <!-- Stats summary -->
       <div class="grid grid-cols-3 gap-4 mb-6">
@@ -70,12 +80,15 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
 
     <!-- Add Truck Modal -->
     @if (showForm()) {
-      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl my-8">
           <h3 class="text-lg font-bold mb-1">Soumettre un camion</h3>
           <p class="text-sm text-gray-500 mb-4">Votre camion sera examiné par un administrateur</p>
           <form (ngSubmit)="submit()" #truckForm="ngForm">
-            <div class="grid grid-cols-2 gap-3">
+
+            <!-- Section: Informations -->
+            <h4 class="text-sm font-bold text-gray-800 uppercase tracking-wide mb-2">Informations</h4>
+            <div class="grid grid-cols-2 gap-3 mb-4">
               <div class="col-span-2">
                 <label class="block text-xs font-medium text-gray-600 mb-1">Immatriculation *</label>
                 <input type="text" name="licensePlate" [(ngModel)]="form.licensePlate" required
@@ -95,23 +108,121 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                   placeholder="ex. FH16" />
               </div>
               <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Année *</label>
+                <input type="number" name="year" [(ngModel)]="form.year" required min="1990" max="2030"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Prix / jour (FCFA) *</label>
+                <input type="number" name="pricePerDay" [(ngModel)]="form.pricePerDay" required min="1" step="1000"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="ex. 50000" />
+              </div>
+            </div>
+
+            <!-- Section: Caractéristiques -->
+            <h4 class="text-sm font-bold text-gray-800 uppercase tracking-wide mb-2">Caractéristiques</h4>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Capacité (tonnes) *</label>
                 <input type="number" name="capacityTons" [(ngModel)]="form.capacityTons" required min="0.5" step="0.5"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-600 mb-1">Année *</label>
-                <input type="number" name="year" [(ngModel)]="form.year" required min="1990" max="2030"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                <label class="block text-xs font-medium text-gray-600 mb-1">Puissance (ch)</label>
+                <input type="number" name="horsepower" [(ngModel)]="form.horsepower" min="1" max="2000"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="ex. 460" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Transmission</label>
+                <select name="transmission" [(ngModel)]="form.transmission"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  <option value="">—</option>
+                  <option value="MANUAL">Manuelle</option>
+                  <option value="AUTOMATIC">Automatique</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Carburant</label>
+                <select name="fuel" [(ngModel)]="form.fuel"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  <option value="">—</option>
+                  <option value="DIESEL">Diesel</option>
+                  <option value="GASOLINE">Essence</option>
+                  <option value="ELECTRIC">Électrique</option>
+                  <option value="HYBRID">Hybride</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Nombre de sièges</label>
+                <input type="number" name="seats" [(ngModel)]="form.seats" min="1" max="10"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="ex. 2" />
               </div>
             </div>
+
+            <!-- Section: Équipements -->
+            <h4 class="text-sm font-bold text-gray-800 uppercase tracking-wide mb-2">Équipements</h4>
+            <div class="grid grid-cols-2 gap-2 mb-4">
+              <label class="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="airConditioning" [(ngModel)]="form.airConditioning" class="w-4 h-4 text-orange-500" />
+                Climatisation
+              </label>
+              <label class="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="gps" [(ngModel)]="form.gps" class="w-4 h-4 text-orange-500" />
+                GPS
+              </label>
+              <label class="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="bluetooth" [(ngModel)]="form.bluetooth" class="w-4 h-4 text-orange-500" />
+                Bluetooth
+              </label>
+              <label class="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="cruiseControl" [(ngModel)]="form.cruiseControl" class="w-4 h-4 text-orange-500" />
+                Régulateur de vitesse
+              </label>
+              <label class="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="parkingSensors" [(ngModel)]="form.parkingSensors" class="w-4 h-4 text-orange-500" />
+                Capteurs de stationnement
+              </label>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+              <label class="block text-xs font-medium text-gray-600 mb-1">Description</label>
+              <textarea name="description" [(ngModel)]="form.description" rows="3" maxlength="5000"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Décrivez votre camion, son état, ses particularités..."></textarea>
+            </div>
+
+            <!-- Section: Photos -->
+            <h4 class="text-sm font-bold text-gray-800 uppercase tracking-wide mb-2">Photos</h4>
+            <div class="mb-4">
+              <input type="file" multiple accept="image/*" (change)="onFileSelect($event)"
+                class="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100" />
+              @if (selectedFiles().length > 0) {
+                <div class="mt-3 grid grid-cols-4 gap-2">
+                  @for (preview of previews(); track preview.name; let i = $index) {
+                    <div class="relative">
+                      <img [src]="preview.url" [alt]="preview.name" class="w-full h-20 object-cover rounded-lg border border-gray-200" />
+                      <button type="button" (click)="removeFile(i)"
+                        class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs font-bold hover:bg-red-600">×</button>
+                    </div>
+                  }
+                </div>
+                <p class="text-xs text-gray-500 mt-2">{{ selectedFiles().length }} photo(s) sélectionnée(s)</p>
+              } @else {
+                <p class="text-xs text-gray-500 mt-2">Ajoutez au moins une photo pour améliorer la visibilité de votre annonce</p>
+              }
+            </div>
+
             <div class="flex gap-3 mt-5">
-              <button type="submit" [disabled]="!truckForm.form.valid"
+              <button type="submit" [disabled]="!truckForm.form.valid || submitting()"
                 class="flex-1 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white rounded-lg font-medium transition-colors">
-                Soumettre pour validation
+                @if (submitting()) { Envoi en cours... } @else { Soumettre pour validation }
               </button>
-              <button type="button" (click)="showForm.set(false)"
-                class="flex-1 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+              <button type="button" (click)="showForm.set(false)" [disabled]="submitting()"
+                class="flex-1 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50">
                 Annuler
               </button>
             </div>
@@ -127,7 +238,12 @@ export class OwnerTrucksComponent implements OnInit {
 
   allTrucks = signal<TruckResponse[]>([]);
   showForm = signal(false);
-  form: TruckRequest = { licensePlate: '', brand: '', model: '', capacityTons: 5, year: new Date().getFullYear() };
+  submitting = signal(false);
+  selectedFiles = signal<File[]>([]);
+  previews = signal<{ name: string; url: string }[]>([]);
+  notification = signal<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
+
+  form: TruckFormData = this.emptyForm();
 
   myTrucks = computed(() => {
     const username = this.authService.currentUser()?.username ?? '';
@@ -146,13 +262,84 @@ export class OwnerTrucksComponent implements OnInit {
     });
   }
 
+  openForm(): void {
+    this.form = this.emptyForm();
+    this.selectedFiles.set([]);
+    this.previews.set([]);
+    this.showForm.set(true);
+  }
+
+  onFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+    const files = Array.from(input.files);
+    this.selectedFiles.set(files);
+    this.previews.set(files.map(f => ({ name: f.name, url: URL.createObjectURL(f) })));
+  }
+
+  removeFile(index: number): void {
+    const files = [...this.selectedFiles()];
+    const prevs = [...this.previews()];
+    URL.revokeObjectURL(prevs[index].url);
+    files.splice(index, 1);
+    prevs.splice(index, 1);
+    this.selectedFiles.set(files);
+    this.previews.set(prevs);
+  }
+
   submit(): void {
+    this.submitting.set(true);
+    this.notification.set(null);
     this.truckService.create(this.form).subscribe({
-      next: () => {
-        this.showForm.set(false);
-        this.form = { licensePlate: '', brand: '', model: '', capacityTons: 5, year: new Date().getFullYear() };
-        this.load();
+      next: created => {
+        const files = this.selectedFiles();
+        if (files.length === 0) {
+          this.finishSubmit('success', 'Camion soumis pour validation.');
+          return;
+        }
+        this.truckService.uploadPhotos(created.id, files).subscribe({
+          next: () => this.finishSubmit('success', `Camion soumis avec ${files.length} photo(s).`),
+          error: err => this.finishSubmit('warning', `Camion créé mais échec de l'upload des photos : ${err?.error?.message ?? err?.message ?? 'erreur inconnue'}`),
+        });
+      },
+      error: err => {
+        this.submitting.set(false);
+        this.notification.set({ type: 'error', message: 'Échec de la soumission : ' + (err?.error?.message ?? err?.message ?? 'erreur inconnue') });
+        setTimeout(() => this.notification.set(null), 8000);
       },
     });
+  }
+
+  private finishSubmit(type: 'success' | 'warning', message: string): void {
+    this.submitting.set(false);
+    this.showForm.set(false);
+    this.form = this.emptyForm();
+    this.selectedFiles.set([]);
+    this.previews().forEach(p => URL.revokeObjectURL(p.url));
+    this.previews.set([]);
+    this.notification.set({ type, message });
+    setTimeout(() => this.notification.set(null), 6000);
+    this.load();
+  }
+
+  private emptyForm(): TruckFormData {
+    return {
+      licensePlate: '',
+      brand: '',
+      model: '',
+      capacityTons: 5,
+      year: new Date().getFullYear(),
+      pricePerDay: undefined,
+      transmission: '',
+      fuel: '',
+      horsepower: undefined,
+      seats: undefined,
+      description: '',
+      airConditioning: false,
+      gps: false,
+      bluetooth: false,
+      cruiseControl: false,
+      parkingSensors: false,
+    };
   }
 }
