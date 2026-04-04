@@ -1,13 +1,14 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CurrencyPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { TruckService } from '../../../core/services/truck.service';
 import { TruckResponse } from '../../../core/models/truck.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, CurrencyPipe],
+  imports: [RouterLink, DecimalPipe],
   template: `
     <div class="animate-fade-in">
       <!-- Hero -->
@@ -73,24 +74,51 @@ import { AuthService } from '../../../core/services/auth.service';
           @if (trucks().length > 0) {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               @for (truck of trucks(); track truck.id) {
-                <a [routerLink]="['/trucks', truck.id]" class="glass-card rounded-xl p-5 hover:border-primary/50 transition-all group cursor-pointer">
-                  <div class="flex items-start justify-between mb-4">
-                    <div class="text-3xl">🚛</div>
-                    @if (truck.pricePerDay) {
-                      <span class="text-lg font-bold text-primary">{{ truck.pricePerDay | currency:'GNF':'symbol':'1.0-0' }}<span class="text-xs font-normal text-muted-foreground">/jour</span></span>
+                <a [routerLink]="['/trucks', truck.id]" class="glass-card rounded-xl overflow-hidden hover:border-primary/50 transition-all group cursor-pointer">
+                  <div class="relative h-44 w-full">
+                    @if (truck.photoUrls?.length) {
+                      <img [src]="apiUrl + truck.photoUrls![0]" [alt]="truck.brand + ' ' + truck.model"
+                        class="h-full w-full object-cover" />
+                    } @else {
+                      <div class="h-full w-full bg-gradient-to-br from-primary/10 via-secondary to-primary/5 flex items-center justify-center">
+                        <svg class="w-16 h-16 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                          <path d="M1 12.5V16a1 1 0 001 1h1m0 0a2 2 0 104 0m-4 0h4m12 0a2 2 0 104 0m-4 0h4a1 1 0 001-1v-5.07a1 1 0 00-.293-.707l-3-3A1 1 0 0017.586 7H15V5a1 1 0 00-1-1H3a1 1 0 00-1 1v7.5" />
+                          <path d="M15 7v4h5" />
+                        </svg>
+                      </div>
                     }
+                    <span class="absolute top-2 right-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/90 text-white backdrop-blur-sm">
+                      Disponible
+                    </span>
                   </div>
-                  <h3 class="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{{ truck.brand }} {{ truck.model }}</h3>
-                  <p class="text-sm text-muted-foreground mb-3">{{ truck.licensePlate }}</p>
-                  <div class="flex items-center gap-3 text-sm text-muted-foreground mb-3">
-                    <span>&#9878;&#65039; {{ truck.capacityTons }}t</span>
-                    <span>&#128197; {{ truck.year }}</span>
-                  </div>
-                  <div class="flex flex-wrap gap-1.5">
-                    @if (truck.gps) { <span class="px-2 py-0.5 bg-secondary rounded text-xs text-secondary-foreground">GPS</span> }
-                    @if (truck.bluetooth) { <span class="px-2 py-0.5 bg-secondary rounded text-xs text-secondary-foreground">Bluetooth</span> }
-                    @if (truck.airConditioning) { <span class="px-2 py-0.5 bg-secondary rounded text-xs text-secondary-foreground">A/C</span> }
-                    @if (truck.cruiseControl) { <span class="px-2 py-0.5 bg-secondary rounded text-xs text-secondary-foreground">Cruise</span> }
+                  <div class="p-5">
+                    <h3 class="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{{ truck.brand }} {{ truck.model }}</h3>
+                    <p class="text-sm text-muted-foreground mb-3">{{ truck.licensePlate }}</p>
+
+                    @if (truck.pricePerDay) {
+                      <p class="text-xl font-bold text-primary mb-3">{{ truck.pricePerDay | number:'1.0-0' }} GNF<span class="text-sm font-normal text-muted-foreground">/jour</span></p>
+                    }
+
+                    <div class="grid grid-cols-3 gap-2 text-sm text-muted-foreground mb-3">
+                      <div class="flex items-center gap-1">
+                        <span>&#9878;&#65039;</span><span>{{ truck.capacityTons }}t</span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <span>&#128197;</span><span>{{ truck.year }}</span>
+                      </div>
+                      @if (truck.horsepower) {
+                        <div class="flex items-center gap-1">
+                          <span>&#9889;</span><span>{{ truck.horsepower }} ch</span>
+                        </div>
+                      }
+                    </div>
+
+                    <div class="flex flex-wrap gap-1.5">
+                      @if (truck.gps) { <span class="px-2 py-0.5 bg-secondary rounded text-xs text-secondary-foreground">GPS</span> }
+                      @if (truck.bluetooth) { <span class="px-2 py-0.5 bg-secondary rounded text-xs text-secondary-foreground">Bluetooth</span> }
+                      @if (truck.airConditioning) { <span class="px-2 py-0.5 bg-secondary rounded text-xs text-secondary-foreground">A/C</span> }
+                      @if (truck.cruiseControl) { <span class="px-2 py-0.5 bg-secondary rounded text-xs text-secondary-foreground">Cruise</span> }
+                    </div>
                   </div>
                 </a>
               }
@@ -183,6 +211,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class HomeComponent implements OnInit {
   private truckService = inject(TruckService);
   authService = inject(AuthService);
+  apiUrl = environment.apiUrl;
 
   trucks = signal<TruckResponse[]>([]);
   loadError = signal(false);
