@@ -220,11 +220,11 @@ interface TruckFormData extends TruckRequest {
 
             <div class="flex gap-3 mt-5">
               <button type="submit" [disabled]="!truckForm.form.valid || submitting()"
-                class="flex-1 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white rounded-lg font-medium transition-colors">
+                class="flex-1 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-400 text-white disabled:text-white rounded-lg font-semibold transition-colors">
                 @if (submitting()) { Envoi en cours... } @else { Soumettre pour validation }
               </button>
               <button type="button" (click)="showForm.set(false)" [disabled]="submitting()"
-                class="flex-1 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50">
+                class="flex-1 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50">
                 Annuler
               </button>
             </div>
