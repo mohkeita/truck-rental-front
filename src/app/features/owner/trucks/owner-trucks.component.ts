@@ -80,11 +80,13 @@ interface TruckFormData extends TruckRequest {
 
     <!-- Add Truck Modal -->
     @if (showForm()) {
-      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-        <div class="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl my-8">
-          <h3 class="text-lg font-bold mb-1">Soumettre un camion</h3>
-          <p class="text-sm text-gray-500 mb-4">Votre camion sera examiné par un administrateur</p>
-          <form (ngSubmit)="submit()" #truckForm="ngForm">
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl w-full max-w-2xl shadow-xl flex flex-col max-h-[90vh]">
+          <div class="p-6 pb-4 border-b border-gray-100 flex-shrink-0">
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Soumettre un camion</h3>
+            <p class="text-sm text-gray-500">Votre camion sera examiné par un administrateur</p>
+          </div>
+          <form (ngSubmit)="submit()" #truckForm="ngForm" class="p-6 overflow-y-auto flex-1">
 
             <!-- Section: Informations -->
             <h4 class="text-sm font-bold text-gray-800 uppercase tracking-wide mb-2">Informations</h4>
@@ -92,30 +94,30 @@ interface TruckFormData extends TruckRequest {
               <div class="col-span-2">
                 <label class="block text-xs font-medium text-gray-600 mb-1">Immatriculation *</label>
                 <input type="text" name="licensePlate" [(ngModel)]="form.licensePlate" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="ex. AA-123-BB" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Marque *</label>
                 <input type="text" name="brand" [(ngModel)]="form.brand" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="ex. Volvo" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Modèle *</label>
                 <input type="text" name="model" [(ngModel)]="form.model" required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="ex. FH16" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Année *</label>
                 <input type="number" name="year" [(ngModel)]="form.year" required min="1990" max="2030"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                  class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Prix / jour (FCFA) *</label>
                 <input type="number" name="pricePerDay" [(ngModel)]="form.pricePerDay" required min="1" step="1000"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="ex. 50000" />
               </div>
             </div>
@@ -126,18 +128,18 @@ interface TruckFormData extends TruckRequest {
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Capacité (tonnes) *</label>
                 <input type="number" name="capacityTons" [(ngModel)]="form.capacityTons" required min="0.5" step="0.5"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                  class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Puissance (ch)</label>
                 <input type="number" name="horsepower" [(ngModel)]="form.horsepower" min="1" max="2000"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="ex. 460" />
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Transmission</label>
                 <select name="transmission" [(ngModel)]="form.transmission"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
                   <option value="">—</option>
                   <option value="MANUAL">Manuelle</option>
                   <option value="AUTOMATIC">Automatique</option>
@@ -146,7 +148,7 @@ interface TruckFormData extends TruckRequest {
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Carburant</label>
                 <select name="fuel" [(ngModel)]="form.fuel"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
                   <option value="">—</option>
                   <option value="DIESEL">Diesel</option>
                   <option value="GASOLINE">Essence</option>
@@ -157,7 +159,7 @@ interface TruckFormData extends TruckRequest {
               <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Nombre de sièges</label>
                 <input type="number" name="seats" [(ngModel)]="form.seats" min="1" max="10"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="ex. 2" />
               </div>
             </div>
@@ -191,7 +193,7 @@ interface TruckFormData extends TruckRequest {
             <div class="mb-4">
               <label class="block text-xs font-medium text-gray-600 mb-1">Description</label>
               <textarea name="description" [(ngModel)]="form.description" rows="3" maxlength="5000"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                class="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
                 placeholder="Décrivez votre camion, son état, ses particularités..."></textarea>
             </div>
 
