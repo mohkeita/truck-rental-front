@@ -115,6 +115,7 @@ export class AdminLayoutComponent {
     { icon: '📍', label: 'Lieux', route: '/admin/locations' },
     { icon: '👨‍✈️', label: 'Chauffeurs', route: '/admin/drivers' },
     { icon: '👥', label: 'Clients', route: '/admin/clients' },
+    { icon: '🔐', label: 'Utilisateurs', route: '/admin/users' },
     { icon: '📄', label: 'Contrats', route: '/admin/contracts' },
     { icon: '💰', label: 'Factures', route: '/admin/invoices' },
     { icon: '🗺️', label: 'Missions', route: '/admin/missions' },
