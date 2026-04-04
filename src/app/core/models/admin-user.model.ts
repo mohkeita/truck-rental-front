@@ -14,3 +14,7 @@ export interface AdminUser {
 export interface ChangeRoleRequest {
   role: UserRole;
 }
+
+export interface SetEnabledRequest {
+  enabled: boolean;
+}

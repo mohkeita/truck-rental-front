@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { AdminUser, ChangeRoleRequest, UserRole } from '../models/admin-user.model';
+import { AdminUser, ChangeRoleRequest, SetEnabledRequest, UserRole } from '../models/admin-user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminUserService {
@@ -14,5 +14,9 @@ export class AdminUserService {
 
   changeRole(id: string, role: UserRole) {
     return this.http.put<void>(`${this.base}/${id}/role`, { role } as ChangeRoleRequest);
+  }
+
+  setEnabled(id: string, enabled: boolean) {
+    return this.http.put<void>(`${this.base}/${id}/enabled`, { enabled } as SetEnabledRequest);
   }
 }

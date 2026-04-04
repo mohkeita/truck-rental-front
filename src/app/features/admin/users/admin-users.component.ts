@@ -79,15 +79,32 @@ import { AdminUser, UserRole } from '../../../core/models/admin-user.model';
                     {{ user.createdTimestamp ? (user.createdTimestamp | date:'dd/MM/yyyy') : '—' }}
                   </td>
                   <td class="p-4 text-right">
-                    <select
-                      [value]="user.role"
-                      [disabled]="isCurrentUser(user) || changingId() === user.id"
-                      (change)="onRoleChange(user, $any($event.target).value)"
-                      class="px-2 py-1.5 bg-background border border-border rounded-md text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed">
-                      <option value="ADMIN">ADMIN</option>
-                      <option value="OWNER">OWNER</option>
-                      <option value="CLIENT">CLIENT</option>
-                    </select>
+                    <div class="flex items-center justify-end gap-2">
+                      <select
+                        [value]="user.role"
+                        [disabled]="isCurrentUser(user) || changingId() === user.id || !user.enabled"
+                        (change)="onRoleChange(user, $any($event.target).value)"
+                        class="px-2 py-1.5 bg-background border border-border rounded-md text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="OWNER">OWNER</option>
+                        <option value="CLIENT">CLIENT</option>
+                      </select>
+                      @if (user.enabled) {
+                        <button
+                          (click)="onToggleEnabled(user)"
+                          [disabled]="isCurrentUser(user) || togglingId() === user.id"
+                          class="px-2 py-1.5 rounded-md text-xs font-medium bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                          Bannir
+                        </button>
+                      } @else {
+                        <button
+                          (click)="onToggleEnabled(user)"
+                          [disabled]="togglingId() === user.id"
+                          class="px-2 py-1.5 rounded-md text-xs font-medium bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                          Réactiver
+                        </button>
+                      }
+                    </div>
                   </td>
                 </tr>
               } @empty {
@@ -111,6 +128,7 @@ export class AdminUsersComponent implements OnInit {
   users = signal<AdminUser[]>([]);
   loading = signal(false);
   changingId = signal<string | null>(null);
+  togglingId = signal<string | null>(null);
   search = signal('');
   notification = signal<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -169,6 +187,27 @@ export class AdminUsersComponent implements OnInit {
         this.changingId.set(null);
         this.users.set([...this.users()]);
         this.showError('Échec du changement de rôle : ' + (err?.error?.message ?? err?.message ?? 'erreur inconnue'));
+      },
+    });
+  }
+
+  onToggleEnabled(user: AdminUser) {
+    const next = !user.enabled;
+    const action = next ? 'réactiver' : 'bannir';
+    if (!confirm(`Voulez-vous ${action} ${user.username} ?${!next ? '\n\nSes sessions actives seront fermées immédiatement.' : ''}`)) {
+      return;
+    }
+
+    this.togglingId.set(user.id);
+    this.adminUserService.setEnabled(user.id, next).subscribe({
+      next: () => {
+        this.users.update(list => list.map(u => u.id === user.id ? { ...u, enabled: next } : u));
+        this.togglingId.set(null);
+        this.showSuccess(next ? `${user.username} a été réactivé.` : `${user.username} a été banni.`);
+      },
+      error: err => {
+        this.togglingId.set(null);
+        this.showError('Échec de l\'opération : ' + (err?.error?.message ?? err?.message ?? 'erreur inconnue'));
       },
     });
   }
