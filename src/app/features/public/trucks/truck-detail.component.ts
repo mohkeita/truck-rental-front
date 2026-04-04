@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, input } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { TruckService } from '../../../core/services/truck.service';
@@ -17,10 +17,37 @@ import { environment } from '../../../../environments/environment';
 
       @if (truck(); as t) {
         <div class="glass-card rounded-xl overflow-hidden">
-          <div class="relative h-64 sm:h-80 w-full">
+          <div class="relative h-64 sm:h-80 w-full group">
             @if (t.photoUrls?.length) {
-              <img [src]="apiUrl + t.photoUrls![0]" [alt]="t.brand + ' ' + t.model"
-                class="h-full w-full object-cover" />
+              <img [src]="apiUrl + t.photoUrls![currentPhoto()]" [alt]="t.brand + ' ' + t.model"
+                class="h-full w-full object-cover transition-opacity duration-300" />
+
+              @if (t.photoUrls!.length > 1) {
+                <!-- Compteur -->
+                <span class="absolute top-3 right-3 bg-black/60 text-white text-xs font-medium px-2.5 py-1 rounded-full">
+                  {{ currentPhoto() + 1 }} / {{ t.photoUrls!.length }}
+                </span>
+
+                <!-- Prev -->
+                <button (click)="prevPhoto()" class="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 hover:bg-black/70 transition-all cursor-pointer">
+                  &#10094;
+                </button>
+
+                <!-- Next -->
+                <button (click)="nextPhoto()" class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 text-white opacity-0 group-hover:opacity-100 hover:bg-black/70 transition-all cursor-pointer">
+                  &#10095;
+                </button>
+
+                <!-- Dots -->
+                <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  @for (url of t.photoUrls!; track url; let i = $index) {
+                    <button (click)="goToPhoto(i)"
+                      class="w-2 h-2 rounded-full transition-all cursor-pointer"
+                      [class]="i === currentPhoto() ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'">
+                    </button>
+                  }
+                </div>
+              }
             } @else {
               <div class="h-full w-full bg-gradient-to-br from-primary/10 via-secondary to-primary/5 flex items-center justify-center">
                 <svg class="w-24 h-24 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -151,6 +178,8 @@ export class TruckDetailComponent implements OnInit {
 
   truck = signal<TruckResponse | null>(null);
   loadError = signal(false);
+  currentPhoto = signal(0);
+  private photoCount = computed(() => this.truck()?.photoUrls?.length ?? 0);
 
   ngOnInit() {
     const numId = parseInt(this.id(), 10);
@@ -162,6 +191,18 @@ export class TruckDetailComponent implements OnInit {
       next: t => this.truck.set(t),
       error: () => this.loadError.set(true),
     });
+  }
+
+  nextPhoto() {
+    this.currentPhoto.update(i => (i + 1) % this.photoCount());
+  }
+
+  prevPhoto() {
+    this.currentPhoto.update(i => (i - 1 + this.photoCount()) % this.photoCount());
+  }
+
+  goToPhoto(index: number) {
+    this.currentPhoto.set(index);
   }
 
   rentTruck() {
