@@ -104,6 +104,12 @@ import { AdminUser, UserRole } from '../../../core/models/admin-user.model';
                           Réactiver
                         </button>
                       }
+                      <button
+                        (click)="onDelete(user)"
+                        [disabled]="isCurrentUser(user) || deletingId() === user.id"
+                        class="px-2 py-1.5 rounded-md text-xs font-medium bg-destructive text-white hover:bg-destructive/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        Supprimer
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -129,6 +135,7 @@ export class AdminUsersComponent implements OnInit {
   loading = signal(false);
   changingId = signal<string | null>(null);
   togglingId = signal<string | null>(null);
+  deletingId = signal<string | null>(null);
   search = signal('');
   notification = signal<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -208,6 +215,25 @@ export class AdminUsersComponent implements OnInit {
       error: err => {
         this.togglingId.set(null);
         this.showError('Échec de l\'opération : ' + (err?.error?.message ?? err?.message ?? 'erreur inconnue'));
+      },
+    });
+  }
+
+  onDelete(user: AdminUser) {
+    if (!confirm(`⚠️ ATTENTION : Vous êtes sur le point de supprimer définitivement le compte de "${user.username}".\n\nCette action est irréversible. Toutes les données associées seront perdues.\n\nConfirmer la suppression ?`)) {
+      return;
+    }
+
+    this.deletingId.set(user.id);
+    this.adminUserService.delete(user.id).subscribe({
+      next: () => {
+        this.users.update(list => list.filter(u => u.id !== user.id));
+        this.deletingId.set(null);
+        this.showSuccess(`L'utilisateur ${user.username} a été supprimé définitivement.`);
+      },
+      error: err => {
+        this.deletingId.set(null);
+        this.showError('Échec de la suppression : ' + (err?.error?.message ?? err?.message ?? 'erreur inconnue'));
       },
     });
   }

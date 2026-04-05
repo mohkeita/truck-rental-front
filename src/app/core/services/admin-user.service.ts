@@ -19,4 +19,8 @@ export class AdminUserService {
   setEnabled(id: string, enabled: boolean) {
     return this.http.put<void>(`${this.base}/${id}/enabled`, { enabled } as SetEnabledRequest);
   }
+
+  delete(id: string) {
+    return this.http.delete<void>(`${this.base}/${id}`);
+  }
 }
