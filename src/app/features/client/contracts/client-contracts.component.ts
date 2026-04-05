@@ -50,9 +50,14 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                 </div>
               </div>
               <div class="flex gap-2 ml-4">
+                <button (click)="downloadPdf(contract.id)"
+                  class="px-3 py-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  PDF
+                </button>
                 @if (contract.status === 'ACTIVE') {
                   <button (click)="cancel(contract.id)"
-                    class="px-2 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded text-xs font-medium">
+                    class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-medium transition-colors">
                     Annuler
                   </button>
                 }
@@ -178,5 +183,18 @@ export class ClientContractsComponent implements OnInit {
     if (confirm('Annuler ce contrat ?')) {
       this.contractService.cancel(id).subscribe({ next: () => this.loadContracts() });
     }
+  }
+
+  downloadPdf(id: number): void {
+    this.contractService.downloadPdf(id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `contrat-${id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+    });
   }
 }
