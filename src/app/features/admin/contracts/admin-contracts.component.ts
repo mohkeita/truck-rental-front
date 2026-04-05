@@ -10,46 +10,46 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
   template: `
     <div>
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Gestion des contrats</h1>
+        <h1 class="text-2xl font-bold text-foreground">Gestion des contrats</h1>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+      <div class="glass-card rounded-xl overflow-x-auto">
         <table class="w-full min-w-[750px]">
-          <thead class="bg-gray-50 border-b border-gray-200">
+          <thead class="bg-secondary/50 border-b border-border">
             <tr>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">#</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Camion</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Client</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Dates</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Coût total</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Statut</th>
-              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">#</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">Camion</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">Client</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">Dates</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">Co&ucirc;t total</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">Statut</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100">
+          <tbody class="divide-y divide-border">
             @for (contract of contracts(); track contract.id) {
-              <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3 text-sm text-gray-500">#{{ contract.id }}</td>
+              <tr class="hover:bg-secondary/30 transition-colors">
+                <td class="px-4 py-3 text-sm text-muted-foreground">#{{ contract.id }}</td>
                 <td class="px-4 py-3">
-                  <div class="font-medium font-mono text-sm">{{ contract.truckLicensePlate }}</div>
-                  <div class="text-xs text-gray-500">{{ contract.truckBrand }}</div>
+                  <div class="font-medium font-mono text-sm text-foreground">{{ contract.truckLicensePlate }}</div>
+                  <div class="text-xs text-muted-foreground">{{ contract.truckBrand }}</div>
                 </td>
-                <td class="px-4 py-3 text-sm">{{ contract.clientUsername }}</td>
-                <td class="px-4 py-3 text-sm text-gray-600">
+                <td class="px-4 py-3 text-sm text-foreground">{{ contract.clientUsername }}</td>
+                <td class="px-4 py-3 text-sm text-muted-foreground">
                   <div>{{ contract.startDate }}</div>
-                  <div>→ {{ contract.endDate }}</div>
+                  <div>&rarr; {{ contract.endDate }}</div>
                 </td>
-                <td class="px-4 py-3 font-semibold">{{ contract.totalCost | number:'1.0-2' }} GNF</td>
+                <td class="px-4 py-3 font-semibold text-primary">{{ contract.totalCost | number:'1.0-2' }} GNF</td>
                 <td class="px-4 py-3"><app-status-badge [status]="contract.status" /></td>
                 <td class="px-4 py-3">
                   <div class="flex gap-2">
                     @if (contract.status === 'ACTIVE') {
                       <button (click)="complete(contract.id)"
-                        class="px-2 py-1 bg-green-100 text-green-700 hover:bg-green-200 rounded text-xs font-medium">
+                        class="px-3 py-1 bg-success/10 text-success hover:bg-success/20 rounded text-xs font-medium transition-colors">
                         Terminer
                       </button>
                       <button (click)="cancel(contract.id)"
-                        class="px-2 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded text-xs font-medium">
+                        class="px-3 py-1 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded text-xs font-medium transition-colors">
                         Annuler
                       </button>
                     }
@@ -57,19 +57,19 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                 </td>
               </tr>
             } @empty {
-              <tr><td colspan="7" class="px-4 py-12 text-center text-gray-400">Aucun contrat trouvé</td></tr>
+              <tr><td colspan="7" class="px-4 py-12 text-center text-muted-foreground">Aucun contrat trouv&eacute;</td></tr>
             }
           </tbody>
         </table>
 
         @if (totalPages() > 1) {
-          <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-            <span class="text-sm text-gray-500">Page {{ currentPage() + 1 }} sur {{ totalPages() }}</span>
+          <div class="px-4 py-3 border-t border-border flex items-center justify-between">
+            <span class="text-sm text-muted-foreground">Page {{ currentPage() + 1 }} sur {{ totalPages() }}</span>
             <div class="flex gap-2">
               <button (click)="changePage(currentPage() - 1)" [disabled]="currentPage() === 0"
-                class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-40 hover:bg-gray-50">Précédent</button>
+                class="px-3 py-1 border border-border rounded text-sm text-foreground disabled:opacity-40 hover:bg-secondary transition-colors">Pr&eacute;c&eacute;dent</button>
               <button (click)="changePage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1"
-                class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-40 hover:bg-gray-50">Suivant</button>
+                class="px-3 py-1 border border-border rounded text-sm text-foreground disabled:opacity-40 hover:bg-secondary transition-colors">Suivant</button>
             </div>
           </div>
         }
