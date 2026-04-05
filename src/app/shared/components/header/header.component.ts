@@ -23,6 +23,10 @@ import { AuthService } from '../../../core/services/auth.service';
               class="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary">
               Camions
             </a>
+            <a routerLink="/contact" routerLinkActive="text-primary bg-secondary"
+              class="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary">
+              Contact
+            </a>
           </nav>
 
           <div class="hidden md:flex items-center gap-3">
@@ -64,6 +68,7 @@ import { AuthService } from '../../../core/services/auth.service';
           <nav class="px-4 py-3 space-y-1">
             <a routerLink="/" (click)="closeMobile()" class="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary">Accueil</a>
             <a routerLink="/trucks" (click)="closeMobile()" class="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary">Camions</a>
+            <a routerLink="/contact" (click)="closeMobile()" class="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary">Contact</a>
           </nav>
           <div class="px-4 py-3 border-t border-border space-y-2">
             @if (authService.isAuthenticated()) {

@@ -15,6 +15,10 @@ export const routes: Routes = [
     path: 'trucks/:id',
     loadComponent: () => import('./features/public/trucks/truck-detail.component').then(m => m.TruckDetailComponent),
   },
+  {
+    path: 'contact',
+    loadComponent: () => import('./features/public/contact/contact.component').then(m => m.ContactComponent),
+  },
 
   // Admin (protected)
   {
@@ -61,6 +65,10 @@ export const routes: Routes = [
       {
         path: 'missions',
         loadComponent: () => import('./features/admin/missions/admin-missions.component').then(m => m.AdminMissionsComponent),
+      },
+      {
+        path: 'messages',
+        loadComponent: () => import('./features/admin/messages/admin-messages.component').then(m => m.AdminMessagesComponent),
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],

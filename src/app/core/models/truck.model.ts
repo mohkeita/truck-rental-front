@@ -54,3 +54,13 @@ export interface TruckRequest {
 export interface RejectRequest {
   reason: string;
 }
+
+export interface TruckSearchFilters {
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minCapacity?: number;
+  maxCapacity?: number;
+  transmission?: string;
+  fuel?: string;
+}

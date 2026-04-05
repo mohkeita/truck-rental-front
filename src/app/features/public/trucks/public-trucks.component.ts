@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TruckService } from '../../../core/services/truck.service';
-import { TruckResponse } from '../../../core/models/truck.model';
+import { TruckResponse, TruckSearchFilters } from '../../../core/models/truck.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
 
@@ -65,19 +65,34 @@ import { environment } from '../../../../environments/environment';
                 }
               </select>
             </div>
+          </div>
 
-            <!-- Reset -->
-            <div class="flex items-center">
-              @if (hasActiveFilters()) {
-                <button (click)="resetFilters()"
-                  class="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors">
-                  Effacer les filtres
-                </button>
-              }
+          <!-- Price & Capacity filters -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+            <div>
+              <input type="number" placeholder="Prix min (GNF)"
+                [ngModel]="filterMinPrice()" (ngModelChange)="filterMinPrice.set($event)"
+                class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            </div>
+            <div>
+              <input type="number" placeholder="Prix max (GNF)"
+                [ngModel]="filterMaxPrice()" (ngModelChange)="filterMaxPrice.set($event)"
+                class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            </div>
+            <div>
+              <input type="number" placeholder="Capacité min (t)"
+                [ngModel]="filterMinCapacity()" (ngModelChange)="filterMinCapacity.set($event)"
+                class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            </div>
+            <div>
+              <input type="number" placeholder="Capacité max (t)"
+                [ngModel]="filterMaxCapacity()" (ngModelChange)="filterMaxCapacity.set($event)"
+                class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
             </div>
           </div>
 
-          <!-- Feature toggles -->
+          <div class="flex items-center justify-between mt-3">
+            <!-- Feature toggles -->
           <div class="flex flex-wrap gap-2 mt-3">
             <button (click)="toggleFeature('gps')"
               [class]="featureClass(filterGps())">
@@ -99,6 +114,20 @@ import { environment } from '../../../../environments/environment';
               [class]="featureClass(filterSensors())">
               Capteurs de stationnement
             </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+              @if (hasActiveFilters()) {
+                <button (click)="resetFilters()"
+                  class="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors">
+                  Effacer les filtres
+                </button>
+              }
+              <button (click)="applyServerFilters()"
+                class="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                Rechercher
+              </button>
+            </div>
           </div>
         </div>
 
@@ -199,6 +228,10 @@ export class PublicTrucksComponent implements OnInit {
   search = signal('');
   filterTransmission = signal('');
   filterFuel = signal('');
+  filterMinPrice = signal<number | null>(null);
+  filterMaxPrice = signal<number | null>(null);
+  filterMinCapacity = signal<number | null>(null);
+  filterMaxCapacity = signal<number | null>(null);
   filterGps = signal(false);
   filterBluetooth = signal(false);
   filterAC = signal(false);
@@ -218,6 +251,8 @@ export class PublicTrucksComponent implements OnInit {
 
   hasActiveFilters = computed(() =>
     this.search() !== '' || this.filterTransmission() !== '' || this.filterFuel() !== '' ||
+    this.filterMinPrice() != null || this.filterMaxPrice() != null ||
+    this.filterMinCapacity() != null || this.filterMaxCapacity() != null ||
     this.filterGps() || this.filterBluetooth() || this.filterAC() || this.filterCruise() || this.filterSensors()
   );
 
@@ -252,10 +287,26 @@ export class PublicTrucksComponent implements OnInit {
   ngOnInit() { this.load(); }
 
   load() {
-    this.truckService.getAvailable(this.currentPage(), 9).subscribe({
+    const filters: TruckSearchFilters = {};
+    const s = this.search();
+    if (s) filters.search = s;
+    if (this.filterTransmission()) filters.transmission = this.filterTransmission();
+    if (this.filterFuel()) filters.fuel = this.filterFuel();
+    if (this.filterMinPrice() != null) filters.minPrice = this.filterMinPrice()!;
+    if (this.filterMaxPrice() != null) filters.maxPrice = this.filterMaxPrice()!;
+    if (this.filterMinCapacity() != null) filters.minCapacity = this.filterMinCapacity()!;
+    if (this.filterMaxCapacity() != null) filters.maxCapacity = this.filterMaxCapacity()!;
+
+    const hasServerFilters = Object.keys(filters).length > 0;
+    this.truckService.getAvailable(this.currentPage(), 9, hasServerFilters ? filters : undefined).subscribe({
       next: page => { this.allTrucks.set(page.content); this.totalPages.set(page.totalPages); },
       error: () => this.loadError.set(true),
     });
+  }
+
+  applyServerFilters() {
+    this.currentPage.set(0);
+    this.load();
   }
 
   changePage(page: number) { this.currentPage.set(page); this.load(); }
@@ -280,11 +331,17 @@ export class PublicTrucksComponent implements OnInit {
     this.search.set('');
     this.filterTransmission.set('');
     this.filterFuel.set('');
+    this.filterMinPrice.set(null);
+    this.filterMaxPrice.set(null);
+    this.filterMinCapacity.set(null);
+    this.filterMaxCapacity.set(null);
     this.filterGps.set(false);
     this.filterBluetooth.set(false);
     this.filterAC.set(false);
     this.filterCruise.set(false);
     this.filterSensors.set(false);
+    this.currentPage.set(0);
+    this.load();
   }
 
   login() { this.authService.login(); }

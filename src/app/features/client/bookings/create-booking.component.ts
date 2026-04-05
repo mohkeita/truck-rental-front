@@ -8,7 +8,7 @@ import { TruckService } from '../../../core/services/truck.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { LocationResponse } from '../../../core/models/location.model';
 import { TruckResponse } from '../../../core/models/truck.model';
-import { BookingRequest, ExtraRequest } from '../../../core/models/booking.model';
+import { BookingEstimateResponse, BookingRequest, ExtraRequest } from '../../../core/models/booking.model';
 
 @Component({
   selector: 'app-create-booking',
@@ -107,16 +107,71 @@ import { BookingRequest, ExtraRequest } from '../../../core/models/booking.model
           }
         </div>
 
+        <!-- Estimate -->
+        @if (estimate()) {
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <h3 class="font-bold text-gray-900 mb-4">Estimation du coût</h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-500">Camion</span>
+                <span class="text-gray-900 font-medium">{{ estimate()!.truckName }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Durée</span>
+                <span class="text-gray-900">{{ estimate()!.rentalDays }} jour(s)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Prix/jour</span>
+                <span class="text-gray-900">{{ estimate()!.pricePerDay | number:'1.0-0' }} GNF</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Sous-total location</span>
+                <span class="text-gray-900">{{ estimate()!.basePrice | number:'1.0-0' }} GNF</span>
+              </div>
+              @for (extra of estimate()!.extras; track extra.name) {
+                <div class="flex justify-between">
+                  <span class="text-gray-500">{{ extra.name }} ({{ extra.pricePerDay | number:'1.0-0' }} GNF/j)</span>
+                  <span class="text-gray-900">{{ extra.total | number:'1.0-0' }} GNF</span>
+                </div>
+              }
+              @if (estimate()!.extrasPrice > 0) {
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Total options</span>
+                  <span class="text-gray-900">{{ estimate()!.extrasPrice | number:'1.0-0' }} GNF</span>
+                </div>
+              }
+              <div class="border-t border-gray-200 pt-2 flex justify-between">
+                <span class="text-gray-500">Sous-total</span>
+                <span class="text-gray-900">{{ estimate()!.subtotal | number:'1.0-0' }} GNF</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">TVA ({{ estimate()!.taxRate }}%)</span>
+                <span class="text-gray-900">{{ estimate()!.taxAmount | number:'1.0-0' }} GNF</span>
+              </div>
+              <div class="border-t border-gray-200 pt-2 flex justify-between text-base font-bold">
+                <span class="text-gray-900">Total TTC</span>
+                <span class="text-orange-500">{{ estimate()!.totalPrice | number:'1.0-0' }} GNF</span>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Submit -->
         <div class="flex items-center justify-between">
           <button type="button" (click)="goBack()"
             class="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             Annuler
           </button>
-          <button type="submit" [disabled]="submitting()"
-            class="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors text-sm disabled:opacity-50">
-            {{ submitting() ? 'Traitement...' : 'Réserver et payer' }}
-          </button>
+          <div class="flex gap-3">
+            <button type="button" (click)="getEstimate()" [disabled]="estimating()"
+              class="px-6 py-2.5 border border-orange-300 text-orange-500 hover:bg-orange-50 rounded-lg font-medium transition-colors text-sm disabled:opacity-50">
+              {{ estimating() ? 'Calcul...' : 'Estimer le coût' }}
+            </button>
+            <button type="submit" [disabled]="submitting()"
+              class="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors text-sm disabled:opacity-50">
+              {{ submitting() ? 'Traitement...' : 'Réserver et payer' }}
+            </button>
+          </div>
         </div>
       </form>
 
@@ -139,6 +194,8 @@ export class CreateBookingComponent implements OnInit {
   truck = signal<TruckResponse | null>(null);
   locations = signal<LocationResponse[]>([]);
   submitting = signal(false);
+  estimating = signal(false);
+  estimate = signal<BookingEstimateResponse | null>(null);
   error = signal('');
 
   truckId = 0;
@@ -206,6 +263,27 @@ export class CreateBookingComponent implements OnInit {
       error: (err) => {
         this.submitting.set(false);
         this.error.set(err.error?.message || err.error?.error || 'Échec de la création de la réservation');
+      },
+    });
+  }
+
+  getEstimate(): void {
+    this.error.set('');
+    this.estimating.set(true);
+
+    this.bookingService.estimate({
+      truckId: this.truckId,
+      pickupDate: this.pickupDate,
+      returnDate: this.returnDate,
+      extras: this.extras.filter(e => e.name.trim() && e.pricePerDay > 0),
+    }).subscribe({
+      next: (est) => {
+        this.estimate.set(est);
+        this.estimating.set(false);
+      },
+      error: (err) => {
+        this.estimating.set(false);
+        this.error.set(err.error?.message || 'Échec du calcul de l\'estimation');
       },
     });
   }

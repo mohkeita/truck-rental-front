@@ -26,6 +26,27 @@ export interface BookingRequest {
   licenseNumber?: string;
 }
 
+export interface BookingEstimateRequest {
+  truckId: number;
+  pickupDate: string;
+  returnDate: string;
+  extras?: ExtraRequest[];
+}
+
+export interface BookingEstimateResponse {
+  truckName: string;
+  rentalDays: number;
+  pricePerDay: number;
+  basePrice: number;
+  extras: { name: string; pricePerDay: number; total: number }[];
+  extrasPrice: number;
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  totalPrice: number;
+  currency: string;
+}
+
 export interface BookingResponse {
   id: number;
   bookingReference: string;

@@ -23,6 +23,7 @@ import { RouterLink } from '@angular/router';
             <ul class="space-y-2">
               <li><a routerLink="/" class="text-sm text-muted-foreground hover:text-primary transition-colors">Accueil</a></li>
               <li><a routerLink="/trucks" class="text-sm text-muted-foreground hover:text-primary transition-colors">Voir les camions</a></li>
+              <li><a routerLink="/contact" class="text-sm text-muted-foreground hover:text-primary transition-colors">Nous contacter</a></li>
             </ul>
           </div>
 

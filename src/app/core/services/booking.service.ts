@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { PageResponse } from '../models/page-response.model';
-import { BookingRequest, BookingResponse } from '../models/booking.model';
+import { BookingEstimateRequest, BookingEstimateResponse, BookingRequest, BookingResponse } from '../models/booking.model';
 
 @Injectable({ providedIn: 'root' })
 export class BookingService {
@@ -11,6 +11,10 @@ export class BookingService {
 
   create(booking: BookingRequest) {
     return this.http.post<BookingResponse>(this.base, booking);
+  }
+
+  estimate(request: BookingEstimateRequest) {
+    return this.http.post<BookingEstimateResponse>(`${this.base}/estimate`, request);
   }
 
   getAll(page = 0, size = 10) {

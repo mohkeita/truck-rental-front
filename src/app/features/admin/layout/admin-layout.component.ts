@@ -119,6 +119,7 @@ export class AdminLayoutComponent {
     { icon: '📄', label: 'Contrats', route: '/admin/contracts' },
     { icon: '💰', label: 'Factures', route: '/admin/invoices' },
     { icon: '🗺️', label: 'Missions', route: '/admin/missions' },
+    { icon: '✉️', label: 'Messages', route: '/admin/messages' },
   ];
 
   constructor(private authService: AuthService) {}
