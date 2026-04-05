@@ -1,7 +1,6 @@
 import { Component, inject, signal, computed, OnInit, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
-import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { TruckService } from '../../../core/services/truck.service';
 import { TruckResponse } from '../../../core/models/truck.model';
@@ -9,6 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { BookingService } from '../../../core/services/booking.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { LocationService } from '../../../core/services/location.service';
+import { LocationResponse } from '../../../core/models/location.model';
 import { ExtraRequest } from '../../../core/models/booking.model';
 import { environment } from '../../../../environments/environment';
 
@@ -217,6 +217,29 @@ import { environment } from '../../../../environments/environment';
               @if (rentalDays() > 0) {
                 <div class="text-xs text-muted-foreground mb-4">{{ rentalDays() }} jour{{ rentalDays() > 1 ? 's' : '' }} de location</div>
               }
+              <!-- Lieux -->
+              @if (locations().length > 0) {
+                <div class="grid grid-cols-1 gap-3 mb-4">
+                  <div>
+                    <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">Lieu de retrait</label>
+                    <select [value]="selectedPickupLocationId()" (change)="selectedPickupLocationId.set(+$any($event.target).value)"
+                      class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
+                      @for (loc of locations(); track loc.id) {
+                        <option [value]="loc.id">{{ loc.name }} — {{ loc.city }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">Lieu de retour</label>
+                    <select [value]="selectedReturnLocationId()" (change)="selectedReturnLocationId.set(+$any($event.target).value)"
+                      class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
+                      @for (loc of locations(); track loc.id) {
+                        <option [value]="loc.id">{{ loc.name }} — {{ loc.city }}</option>
+                      }
+                    </select>
+                  </div>
+                </div>
+              }
               <div class="space-y-3 mb-4">
                 <button (click)="optChauffeur.set(!optChauffeur())" class="w-full flex items-center justify-between py-2 cursor-pointer">
                   <div>
@@ -321,6 +344,30 @@ import { environment } from '../../../../environments/environment';
                 <div class="text-xs text-muted-foreground mb-5 flex items-center gap-1.5">
                   <svg class="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   {{ rentalDays() }} jour{{ rentalDays() > 1 ? 's' : '' }} de location
+                </div>
+              }
+
+              <!-- Lieux -->
+              @if (locations().length > 0) {
+                <div class="space-y-4 mb-5">
+                  <div>
+                    <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">Lieu de retrait</label>
+                    <select [value]="selectedPickupLocationId()" (change)="selectedPickupLocationId.set(+$any($event.target).value)"
+                      class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
+                      @for (loc of locations(); track loc.id) {
+                        <option [value]="loc.id">{{ loc.name }} — {{ loc.city }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">Lieu de retour</label>
+                    <select [value]="selectedReturnLocationId()" (change)="selectedReturnLocationId.set(+$any($event.target).value)"
+                      class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
+                      @for (loc of locations(); track loc.id) {
+                        <option [value]="loc.id">{{ loc.name }} — {{ loc.city }}</option>
+                      }
+                    </select>
+                  </div>
                 </div>
               }
 
@@ -493,6 +540,11 @@ export class TruckDetailComponent implements OnInit {
   currentPhoto = signal(0);
   private photoCount = computed(() => this.truck()?.photoUrls?.length ?? 0);
 
+  // Locations
+  locations = signal<LocationResponse[]>([]);
+  selectedPickupLocationId = signal(0);
+  selectedReturnLocationId = signal(0);
+
   // Booking state
   startDate = signal('');
   endDate = signal('');
@@ -544,6 +596,18 @@ export class TruckDetailComponent implements OnInit {
       next: t => this.truck.set(t),
       error: () => this.loadError.set(true),
     });
+
+    // Charger les lieux et pré-sélectionner Conakry
+    this.locationService.getAll().subscribe({
+      next: (locs) => {
+        const active = locs.filter(l => l.active);
+        this.locations.set(active);
+        const conakry = active.find(l => l.city.toLowerCase().includes('conakry'));
+        const defaultId = conakry?.id ?? active[0]?.id ?? 0;
+        this.selectedPickupLocationId.set(defaultId);
+        this.selectedReturnLocationId.set(defaultId);
+      },
+    });
   }
 
   nextPhoto() { this.currentPhoto.update(i => (i + 1) % this.photoCount()); }
@@ -561,6 +625,8 @@ export class TruckDetailComponent implements OnInit {
       truckId: t.id,
       startDate: this.startDate(),
       endDate: this.endDate(),
+      pickupLocationId: this.selectedPickupLocationId(),
+      returnLocationId: this.selectedReturnLocationId(),
       optChauffeur: this.optChauffeur(),
       optAssurance: this.optAssurance(),
       optMaintenance: this.optMaintenance(),
@@ -575,47 +641,39 @@ export class TruckDetailComponent implements OnInit {
 
     // Si dates remplies : créer la réservation directement et rediriger vers le paiement
     if (hasDates) {
+      const pickupId = this.selectedPickupLocationId();
+      const returnId = this.selectedReturnLocationId();
+      if (!pickupId || !returnId) {
+        this.bookingError.set('Veuillez sélectionner les lieux de retrait et retour');
+        return;
+      }
+
       this.bookingInProgress.set(true);
       this.bookingError.set('');
 
-      // Charger les lieux puis créer le booking
-      this.locationService.getAll().subscribe({
-        next: (locations) => {
-          if (locations.length === 0) {
-            this.bookingInProgress.set(false);
-            this.bookingError.set('Aucun lieu de retrait disponible');
-            return;
-          }
+      const extras: ExtraRequest[] = [];
+      if (this.optChauffeur()) extras.push({ name: 'Chauffeur professionnel', pricePerDay: 150000 });
+      if (this.optAssurance()) extras.push({ name: 'Assurance tous risques', pricePerDay: 75000 });
+      if (this.optMaintenance()) extras.push({ name: 'Maintenance incluse', pricePerDay: 50000 });
+      if (this.optLivraison()) extras.push({ name: 'Livraison sur site', pricePerDay: 200000 });
 
-          const extras: ExtraRequest[] = [];
-          if (this.optChauffeur()) extras.push({ name: 'Chauffeur professionnel', pricePerDay: 150000 });
-          if (this.optAssurance()) extras.push({ name: 'Assurance tous risques', pricePerDay: 75000 });
-          if (this.optMaintenance()) extras.push({ name: 'Maintenance incluse', pricePerDay: 50000 });
-          if (this.optLivraison()) extras.push({ name: 'Livraison sur site', pricePerDay: 200000 });
-
-          this.bookingService.create({
-            truckId: t.id,
-            pickupLocationId: locations[0].id,
-            returnLocationId: locations[0].id,
-            pickupDate: this.startDate(),
-            returnDate: this.endDate(),
-            extras,
-          }).pipe(
-            switchMap(booking => this.paymentService.initiatePayment(booking.id))
-          ).subscribe({
-            next: (payment) => {
-              sessionStorage.removeItem('pendingBooking');
-              window.location.href = payment.paymentUrl;
-            },
-            error: (err) => {
-              this.bookingInProgress.set(false);
-              this.bookingError.set(err.error?.message || 'Erreur lors de la réservation');
-            },
-          });
+      this.bookingService.create({
+        truckId: t.id,
+        pickupLocationId: pickupId,
+        returnLocationId: returnId,
+        pickupDate: this.startDate(),
+        returnDate: this.endDate(),
+        extras,
+      }).pipe(
+        switchMap(booking => this.paymentService.initiatePayment(booking.id))
+      ).subscribe({
+        next: (payment) => {
+          sessionStorage.removeItem('pendingBooking');
+          window.location.href = payment.paymentUrl;
         },
-        error: () => {
+        error: (err) => {
           this.bookingInProgress.set(false);
-          this.bookingError.set('Impossible de charger les lieux');
+          this.bookingError.set(err.error?.message || 'Erreur lors de la réservation');
         },
       });
     } else {

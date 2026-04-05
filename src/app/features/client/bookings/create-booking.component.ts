@@ -15,6 +15,13 @@ import { BookingEstimateResponse, BookingRequest, ExtraRequest } from '../../../
   imports: [FormsModule, DecimalPipe],
   template: `
     <div>
+      @if (autoSubmitting()) {
+        <div class="flex flex-col items-center justify-center py-24">
+          <div class="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p class="text-lg font-bold text-gray-900">Redirection vers le paiement...</p>
+          <p class="text-sm text-gray-500 mt-1">Veuillez patienter</p>
+        </div>
+      } @else {
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Réserver un camion</h1>
         <p class="text-gray-500 text-sm mt-1">Remplissez les détails pour réserver votre camion</p>
@@ -180,6 +187,7 @@ import { BookingEstimateResponse, BookingRequest, ExtraRequest } from '../../../
           {{ error() }}
         </div>
       }
+      }
     </div>
   `,
 })
@@ -197,6 +205,7 @@ export class CreateBookingComponent implements OnInit {
   estimating = signal(false);
   estimate = signal<BookingEstimateResponse | null>(null);
   error = signal('');
+  autoSubmitting = signal(false);
 
   truckId = 0;
   pickupDate = '';
@@ -221,6 +230,8 @@ export class CreateBookingComponent implements OnInit {
         if (pendingData.truckId) this.truckId = pendingData.truckId;
         if (pendingData.startDate) this.pickupDate = pendingData.startDate;
         if (pendingData.endDate) this.returnDate = pendingData.endDate;
+        if (pendingData.pickupLocationId) this.pickupLocationId = pendingData.pickupLocationId;
+        if (pendingData.returnLocationId) this.returnLocationId = pendingData.returnLocationId;
 
         // Convertir les options en extras
         if (pendingData.optChauffeur) this.extras.push({ name: 'Chauffeur professionnel', pricePerDay: 150000 });
@@ -239,13 +250,14 @@ export class CreateBookingComponent implements OnInit {
 
     this.locationService.getAll().subscribe({
       next: (data) => {
-        this.locations.set(data);
-        // Sélectionner le premier lieu par défaut si auto-submit
-        if (this.autoSubmit && data.length > 0) {
-          if (!this.pickupLocationId) this.pickupLocationId = data[0].id;
-          if (!this.returnLocationId) this.returnLocationId = data[0].id;
-          this.tryAutoSubmit();
-        }
+        const active = data.filter(l => l.active);
+        this.locations.set(active);
+        // Pré-sélectionner Conakry par défaut si pas déjà choisi
+        const conakry = active.find(l => l.city.toLowerCase().includes('conakry'));
+        const defaultId = conakry?.id ?? active[0]?.id ?? 0;
+        if (!this.pickupLocationId) this.pickupLocationId = defaultId;
+        if (!this.returnLocationId) this.returnLocationId = defaultId;
+        if (this.autoSubmit) this.tryAutoSubmit();
       },
     });
 
@@ -266,6 +278,7 @@ export class CreateBookingComponent implements OnInit {
     if (!this.truck() || this.locations().length === 0) return;
     if (!this.pickupLocationId || !this.returnLocationId) return;
     this.autoSubmit = false; // éviter double soumission
+    this.autoSubmitting.set(true);
     this.submit();
   }
 
