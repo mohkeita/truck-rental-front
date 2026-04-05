@@ -36,4 +36,8 @@ export class ContractService {
   delete(id: number) {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
+
+  downloadPdf(id: number) {
+    return this.http.get(`${this.base}/${id}/pdf`, { responseType: 'blob' });
+  }
 }

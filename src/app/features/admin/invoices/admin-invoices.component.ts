@@ -38,12 +38,18 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                 <td class="px-4 py-3 text-sm text-muted-foreground">{{ invoice.dueDate }}</td>
                 <td class="px-4 py-3"><app-status-badge [status]="invoice.status" /></td>
                 <td class="px-4 py-3">
-                  @if (invoice.status === 'PENDING' || invoice.status === 'OVERDUE') {
-                    <button (click)="pay(invoice.id)"
-                      class="px-3 py-1 bg-success/10 text-success hover:bg-success/20 rounded text-xs font-medium transition-colors">
-                      Marquer pay&eacute;
+                  <div class="flex gap-2">
+                    <button (click)="downloadPdf(invoice.id)"
+                      class="px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 rounded text-xs font-medium transition-colors">
+                      PDF
                     </button>
-                  }
+                    @if (invoice.status === 'PENDING' || invoice.status === 'OVERDUE') {
+                      <button (click)="pay(invoice.id)"
+                        class="px-3 py-1 bg-success/10 text-success hover:bg-success/20 rounded text-xs font-medium transition-colors">
+                        Marquer pay&eacute;
+                      </button>
+                    }
+                  </div>
                 </td>
               </tr>
             } @empty {
@@ -86,5 +92,18 @@ export class AdminInvoicesComponent implements OnInit {
 
   pay(id: number): void {
     this.invoiceService.pay(id).subscribe({ next: () => this.load() });
+  }
+
+  downloadPdf(id: number): void {
+    this.invoiceService.downloadPdf(id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `facture-${id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+    });
   }
 }

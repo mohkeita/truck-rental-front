@@ -43,6 +43,10 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                 <td class="px-4 py-3"><app-status-badge [status]="contract.status" /></td>
                 <td class="px-4 py-3">
                   <div class="flex gap-2">
+                    <button (click)="downloadPdf(contract.id)"
+                      class="px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 rounded text-xs font-medium transition-colors">
+                      PDF
+                    </button>
                     @if (contract.status === 'ACTIVE') {
                       <button (click)="complete(contract.id)"
                         class="px-3 py-1 bg-success/10 text-success hover:bg-success/20 rounded text-xs font-medium transition-colors">
@@ -104,5 +108,18 @@ export class AdminContractsComponent implements OnInit {
     if (confirm('Annuler ce contrat ?')) {
       this.contractService.cancel(id).subscribe({ next: () => this.load() });
     }
+  }
+
+  downloadPdf(id: number): void {
+    this.contractService.downloadPdf(id).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `contrat-${id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+    });
   }
 }
