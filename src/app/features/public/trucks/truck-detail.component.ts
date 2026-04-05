@@ -642,7 +642,7 @@ export class TruckDetailComponent implements OnInit {
     return '';
   });
 
-  private formatDate(dateStr: string): string {
+  protected formatDate(dateStr: string): string {
     const [y, m, d] = dateStr.split('-');
     return `${d}/${m}/${y}`;
   }
