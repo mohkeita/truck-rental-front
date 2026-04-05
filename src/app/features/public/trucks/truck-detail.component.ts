@@ -532,6 +532,19 @@ export class TruckDetailComponent implements OnInit {
   rentTruck() {
     const t = this.truck();
     if (!t) return;
+
+    // Sauvegarder les données du formulaire avant redirection
+    const bookingData = {
+      truckId: t.id,
+      startDate: this.startDate(),
+      endDate: this.endDate(),
+      optChauffeur: this.optChauffeur(),
+      optAssurance: this.optAssurance(),
+      optMaintenance: this.optMaintenance(),
+      optLivraison: this.optLivraison(),
+    };
+    sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
+
     if (!this.authService.isAuthenticated()) {
       this.authService.login(window.location.origin + '/client/book?truckId=' + t.id);
       return;

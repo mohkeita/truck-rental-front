@@ -205,11 +205,48 @@ export class CreateBookingComponent implements OnInit {
   returnLocationId = 0;
   extras: ExtraRequest[] = [];
 
+  private autoSubmit = false;
+
   ngOnInit(): void {
     this.truckId = Number(this.route.snapshot.queryParamMap.get('truckId') || 0);
 
+    // Restaurer les données sauvegardées avant login
+    const saved = sessionStorage.getItem('pendingBooking');
+    let pendingData: any = null;
+    if (saved) {
+      try {
+        pendingData = JSON.parse(saved);
+        sessionStorage.removeItem('pendingBooking');
+
+        if (pendingData.truckId) this.truckId = pendingData.truckId;
+        if (pendingData.startDate) this.pickupDate = pendingData.startDate;
+        if (pendingData.endDate) this.returnDate = pendingData.endDate;
+
+        // Convertir les options en extras
+        if (pendingData.optChauffeur) this.extras.push({ name: 'Chauffeur professionnel', pricePerDay: 150000 });
+        if (pendingData.optAssurance) this.extras.push({ name: 'Assurance tous risques', pricePerDay: 75000 });
+        if (pendingData.optMaintenance) this.extras.push({ name: 'Maintenance incluse', pricePerDay: 50000 });
+        if (pendingData.optLivraison) this.extras.push({ name: 'Livraison sur site', pricePerDay: 200000 });
+
+        // Auto-submit si dates remplies
+        if (pendingData.startDate && pendingData.endDate) {
+          this.autoSubmit = true;
+        }
+      } catch (e) {
+        // ignore parse errors
+      }
+    }
+
     this.locationService.getAll().subscribe({
-      next: (data) => this.locations.set(data),
+      next: (data) => {
+        this.locations.set(data);
+        // Sélectionner le premier lieu par défaut si auto-submit
+        if (this.autoSubmit && data.length > 0) {
+          if (!this.pickupLocationId) this.pickupLocationId = data[0].id;
+          if (!this.returnLocationId) this.returnLocationId = data[0].id;
+          this.tryAutoSubmit();
+        }
+      },
     });
 
     if (this.truckId) {
@@ -217,9 +254,19 @@ export class CreateBookingComponent implements OnInit {
         next: (page) => {
           const found = page.content.find(t => t.id === this.truckId);
           if (found) this.truck.set(found);
+          this.tryAutoSubmit();
         },
       });
     }
+  }
+
+  private tryAutoSubmit(): void {
+    if (!this.autoSubmit) return;
+    // Attendre que le camion et les lieux soient chargés
+    if (!this.truck() || this.locations().length === 0) return;
+    if (!this.pickupLocationId || !this.returnLocationId) return;
+    this.autoSubmit = false; // éviter double soumission
+    this.submit();
   }
 
   addExtra(): void {
