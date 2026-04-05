@@ -259,7 +259,7 @@ export class OwnerTrucksComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    this.truckService.getAll(0, 100).subscribe({
+    this.truckService.getMy(0, 100).subscribe({
       next: page => this.allTrucks.set(page.content),
     });
   }

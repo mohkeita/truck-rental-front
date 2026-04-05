@@ -13,6 +13,10 @@ export class TruckService {
     return this.http.get<PageResponse<TruckResponse>>(`${this.base}?page=${page}&size=${size}&sort=id,desc`);
   }
 
+  getMy(page = 0, size = 100) {
+    return this.http.get<PageResponse<TruckResponse>>(`${this.base}/my?page=${page}&size=${size}&sort=id,desc`);
+  }
+
   getAvailable(page = 0, size = 20, filters?: TruckSearchFilters) {
     let params = `page=${page}&size=${size}`;
     if (filters) {
