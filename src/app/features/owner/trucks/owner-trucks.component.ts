@@ -50,10 +50,10 @@ interface TruckFormData extends TruckRequest {
       <!-- Truck cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (truck of myTrucks(); track truck.id) {
-          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 text-gray-900">
             <div class="flex items-start justify-between mb-3">
               <div>
-                <p class="font-bold font-mono text-lg">{{ truck.licensePlate }}</p>
+                <p class="font-bold font-mono text-lg text-gray-900">{{ truck.licensePlate }}</p>
                 <p class="text-gray-600 text-sm">{{ truck.brand }} {{ truck.model }}</p>
               </div>
               <app-status-badge [status]="truck.status" />
