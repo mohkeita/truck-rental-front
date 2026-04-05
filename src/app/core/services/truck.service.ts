@@ -51,6 +51,11 @@ export class TruckService {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 
+  getUnavailableDates(truckId: number) {
+    return this.http.get<{startDate: string, endDate: string}[]>(
+      `${this.base}/${truckId}/unavailable-dates`);
+  }
+
   uploadPhotos(id: number, files: File[]) {
     const formData = new FormData();
     files.forEach(f => formData.append('files', f));

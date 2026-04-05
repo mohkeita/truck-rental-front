@@ -205,15 +205,29 @@ import { environment } from '../../../../environments/environment';
               <div class="grid grid-cols-2 gap-3 mb-4">
                 <div>
                   <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">D&eacute;but</label>
-                  <input type="date" [value]="startDate()" (input)="startDate.set($any($event.target).value)"
+                  <input type="date" [value]="startDate()" [min]="minDate()" (input)="startDate.set($any($event.target).value)"
                     class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">Fin</label>
-                  <input type="date" [value]="endDate()" (input)="endDate.set($any($event.target).value)"
+                  <input type="date" [value]="endDate()" [min]="startDate() || minDate()" (input)="endDate.set($any($event.target).value)"
                     class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 </div>
               </div>
+              <!-- P&eacute;riodes r&eacute;serv&eacute;es (mobile) -->
+              @if (unavailablePeriods().length > 0) {
+                <div class="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <div class="text-xs font-bold text-destructive mb-1.5">P&eacute;riodes r&eacute;serv&eacute;es :</div>
+                  @for (p of unavailablePeriods(); track p.startDate) {
+                    <div class="text-xs text-destructive/80">{{ formatDate(p.startDate) }} &rarr; {{ formatDate(p.endDate) }}</div>
+                  }
+                </div>
+              }
+              @if (dateConflict()) {
+                <div class="mb-4 p-3 bg-destructive/15 border border-destructive/30 rounded-lg text-xs font-medium text-destructive">
+                  {{ dateConflict() }}
+                </div>
+              }
               @if (rentalDays() > 0) {
                 <div class="text-xs text-muted-foreground mb-4">{{ rentalDays() }} jour{{ rentalDays() > 1 ? 's' : '' }} de location</div>
               }
@@ -299,10 +313,12 @@ import { environment } from '../../../../environments/environment';
                   </div>
                 </div>
               }
-              <button (click)="rentTruck()" [disabled]="bookingInProgress()"
+              <button (click)="rentTruck()" [disabled]="bookingInProgress() || !!dateConflict()"
                 class="w-full py-3.5 bg-primary text-primary-foreground rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors glow-amber disabled:opacity-50">
                 @if (bookingInProgress()) {
                   Traitement en cours...
+                } @else if (dateConflict()) {
+                  Dates indisponibles
                 } @else if (rentalDays() > 0 && t.pricePerDay) {
                   R&eacute;server &middot; {{ grandTotal() | number:'1.0-0' }} GNF
                 } @else {
@@ -330,15 +346,32 @@ import { environment } from '../../../../environments/environment';
               <div class="space-y-4 mb-5">
                 <div>
                   <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">Date de d&eacute;but</label>
-                  <input type="date" [value]="startDate()" (input)="startDate.set($any($event.target).value)"
+                  <input type="date" [value]="startDate()" [min]="minDate()" (input)="startDate.set($any($event.target).value)"
                     class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">Date de fin</label>
-                  <input type="date" [value]="endDate()" (input)="endDate.set($any($event.target).value)"
+                  <input type="date" [value]="endDate()" [min]="startDate() || minDate()" (input)="endDate.set($any($event.target).value)"
                     class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 </div>
               </div>
+
+              <!-- P&eacute;riodes r&eacute;serv&eacute;es -->
+              @if (unavailablePeriods().length > 0) {
+                <div class="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <div class="text-xs font-bold text-destructive mb-1.5">P&eacute;riodes r&eacute;serv&eacute;es :</div>
+                  @for (p of unavailablePeriods(); track p.startDate) {
+                    <div class="text-xs text-destructive/80">{{ formatDate(p.startDate) }} &rarr; {{ formatDate(p.endDate) }}</div>
+                  }
+                </div>
+              }
+
+              <!-- Conflit de dates -->
+              @if (dateConflict()) {
+                <div class="mb-4 p-3 bg-destructive/15 border border-destructive/30 rounded-lg text-xs font-medium text-destructive">
+                  {{ dateConflict() }}
+                </div>
+              }
 
               @if (rentalDays() > 0) {
                 <div class="text-xs text-muted-foreground mb-5 flex items-center gap-1.5">
@@ -450,10 +483,12 @@ import { environment } from '../../../../environments/environment';
                 </div>
               }
 
-              <button (click)="rentTruck()" [disabled]="bookingInProgress()"
+              <button (click)="rentTruck()" [disabled]="bookingInProgress() || !!dateConflict()"
                 class="w-full py-3 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-colors glow-amber disabled:opacity-50">
                 @if (bookingInProgress()) {
                   Traitement en cours...
+                } @else if (dateConflict()) {
+                  Dates indisponibles
                 } @else if (rentalDays() > 0 && t.pricePerDay) {
                   Confirmer &middot; {{ grandTotal() | number:'1.0-0' }} GNF
                 } @else {
@@ -545,6 +580,9 @@ export class TruckDetailComponent implements OnInit {
   selectedPickupLocationId = signal(0);
   selectedReturnLocationId = signal(0);
 
+  // Unavailable periods
+  unavailablePeriods = signal<{startDate: string, endDate: string}[]>([]);
+
   // Booking state
   startDate = signal('');
   endDate = signal('');
@@ -586,6 +624,29 @@ export class TruckDetailComponent implements OnInit {
     return p ? Math.round(p * 30 * 0.8) : 0;
   });
 
+  minDate = computed(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+
+  dateConflict = computed(() => {
+    const s = this.startDate();
+    const e = this.endDate();
+    if (!s || !e) return '';
+    const periods = this.unavailablePeriods();
+    for (const p of periods) {
+      if (s <= p.endDate && e >= p.startDate) {
+        return `Dates indisponibles : du ${this.formatDate(p.startDate)} au ${this.formatDate(p.endDate)}`;
+      }
+    }
+    return '';
+  });
+
+  private formatDate(dateStr: string): string {
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
   ngOnInit() {
     const numId = parseInt(this.id(), 10);
     if (isNaN(numId)) {
@@ -595,6 +656,10 @@ export class TruckDetailComponent implements OnInit {
     this.truckService.getAvailableById(numId).subscribe({
       next: t => this.truck.set(t),
       error: () => this.loadError.set(true),
+    });
+
+    this.truckService.getUnavailableDates(numId).subscribe({
+      next: periods => this.unavailablePeriods.set(periods),
     });
 
     // Charger les lieux et pré-sélectionner Conakry
