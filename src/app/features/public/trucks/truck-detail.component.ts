@@ -190,11 +190,93 @@ import { environment } from '../../../../environments/environment';
               }
             </div>
 
-            <!-- Mobile CTA -->
-            <div class="lg:hidden">
+            <!-- Mobile Booking -->
+            <div class="lg:hidden glass-card rounded-xl p-6 mt-6">
+              <h3 class="text-lg font-bold text-foreground mb-4">R&eacute;server ce camion</h3>
+              @if (t.pricePerDay) {
+                <div class="text-xl font-bold text-primary mb-4">{{ t.pricePerDay | number:'1.0-0' }} GNF<span class="text-sm font-normal text-muted-foreground">/jour</span></div>
+              }
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">D&eacute;but</label>
+                  <input type="date" [value]="startDate()" (input)="startDate.set($any($event.target).value)"
+                    class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">Fin</label>
+                  <input type="date" [value]="endDate()" (input)="endDate.set($any($event.target).value)"
+                    class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                </div>
+              </div>
+              @if (rentalDays() > 0) {
+                <div class="text-xs text-muted-foreground mb-4">{{ rentalDays() }} jour{{ rentalDays() > 1 ? 's' : '' }} de location</div>
+              }
+              <div class="space-y-3 mb-4">
+                <button (click)="optChauffeur.set(!optChauffeur())" class="w-full flex items-center justify-between py-2 cursor-pointer">
+                  <div>
+                    <span class="text-sm text-foreground">Chauffeur professionnel</span>
+                    <span class="text-xs text-muted-foreground ml-1">+150 000 GNF/j</span>
+                  </div>
+                  <div class="w-10 h-5 rounded-full relative transition-colors" [class]="optChauffeur() ? 'bg-primary' : 'bg-secondary'">
+                    <div class="w-4 h-4 rounded-full absolute top-0.5 transition-all" [class]="optChauffeur() ? 'bg-primary-foreground left-5' : 'bg-muted-foreground left-0.5'"></div>
+                  </div>
+                </button>
+                <button (click)="optAssurance.set(!optAssurance())" class="w-full flex items-center justify-between py-2 cursor-pointer">
+                  <div>
+                    <span class="text-sm text-foreground">Assurance tous risques</span>
+                    <span class="text-xs text-muted-foreground ml-1">+75 000 GNF/j</span>
+                  </div>
+                  <div class="w-10 h-5 rounded-full relative transition-colors" [class]="optAssurance() ? 'bg-primary' : 'bg-secondary'">
+                    <div class="w-4 h-4 rounded-full absolute top-0.5 transition-all" [class]="optAssurance() ? 'bg-primary-foreground left-5' : 'bg-muted-foreground left-0.5'"></div>
+                  </div>
+                </button>
+                <button (click)="optLivraison.set(!optLivraison())" class="w-full flex items-center justify-between py-2 cursor-pointer">
+                  <div>
+                    <span class="text-sm text-foreground">Livraison sur site</span>
+                    <span class="text-xs text-muted-foreground ml-1">+200 000 GNF</span>
+                  </div>
+                  <div class="w-10 h-5 rounded-full relative transition-colors" [class]="optLivraison() ? 'bg-primary' : 'bg-secondary'">
+                    <div class="w-4 h-4 rounded-full absolute top-0.5 transition-all" [class]="optLivraison() ? 'bg-primary-foreground left-5' : 'bg-muted-foreground left-0.5'"></div>
+                  </div>
+                </button>
+              </div>
+              @if (rentalDays() > 0 && t.pricePerDay) {
+                <div class="border-t border-border pt-4 mb-4 space-y-2 text-sm">
+                  <div class="flex justify-between text-muted-foreground">
+                    <span>Location ({{ rentalDays() }}j &times; {{ t.pricePerDay | number:'1.0-0' }})</span>
+                    <span>{{ baseTotal() | number:'1.0-0' }} GNF</span>
+                  </div>
+                  @if (optChauffeur()) {
+                    <div class="flex justify-between text-muted-foreground">
+                      <span>Chauffeur ({{ rentalDays() }}j)</span>
+                      <span>+{{ chauffeurTotal() | number:'1.0-0' }} GNF</span>
+                    </div>
+                  }
+                  @if (optAssurance()) {
+                    <div class="flex justify-between text-muted-foreground">
+                      <span>Assurance ({{ rentalDays() }}j)</span>
+                      <span>+{{ assuranceTotal() | number:'1.0-0' }} GNF</span>
+                    </div>
+                  }
+                  @if (optLivraison()) {
+                    <div class="flex justify-between text-muted-foreground">
+                      <span>Livraison</span>
+                      <span>+200 000 GNF</span>
+                    </div>
+                  }
+                  <div class="flex justify-between font-bold text-foreground pt-2 border-t border-border text-lg">
+                    <span>Total</span>
+                    <span class="text-primary">{{ grandTotal() | number:'1.0-0' }} GNF</span>
+                  </div>
+                </div>
+              }
               <button (click)="rentTruck()"
                 class="w-full py-3.5 bg-primary text-primary-foreground rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors glow-amber">
-                R&eacute;server ce camion
+                @if (rentalDays() > 0 && t.pricePerDay) {
+                  R&eacute;server &middot; {{ grandTotal() | number:'1.0-0' }} GNF
+                } @else {
+                  R&eacute;server ce camion
+                }
               </button>
               @if (!authService.isAuthenticated()) {
                 <p class="text-xs text-muted-foreground text-center mt-2">Vous devez &ecirc;tre connect&eacute; pour r&eacute;server</p>
@@ -210,43 +292,113 @@ import { environment } from '../../../../environments/environment';
                 <div class="text-2xl font-bold text-primary mb-5">{{ t.pricePerDay | number:'1.0-0' }} GNF<span class="text-sm font-normal text-muted-foreground">/jour</span></div>
               }
 
-              <div class="space-y-4 mb-6">
+              <!-- Dates -->
+              <div class="space-y-4 mb-5">
                 <div>
                   <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">Date de d&eacute;but</label>
-                  <input type="date" class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  <input type="date" [value]="startDate()" (input)="startDate.set($any($event.target).value)"
+                    class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1.5">Date de fin</label>
-                  <input type="date" class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  <input type="date" [value]="endDate()" (input)="endDate.set($any($event.target).value)"
+                    class="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
                 </div>
               </div>
 
+              @if (rentalDays() > 0) {
+                <div class="text-xs text-muted-foreground mb-5 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  {{ rentalDays() }} jour{{ rentalDays() > 1 ? 's' : '' }} de location
+                </div>
+              }
+
               <!-- Options -->
-              <div class="space-y-3 mb-6">
+              <div class="space-y-3 mb-5">
                 <h4 class="text-xs font-bold text-foreground uppercase tracking-wider">Options</h4>
-                <label class="flex items-center justify-between cursor-pointer group">
-                  <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Chauffeur professionnel</span>
-                  <div class="w-10 h-5 bg-secondary rounded-full relative">
-                    <div class="w-4 h-4 bg-muted-foreground rounded-full absolute left-0.5 top-0.5"></div>
+                <button (click)="optChauffeur.set(!optChauffeur())" class="w-full flex items-center justify-between py-2.5 cursor-pointer group">
+                  <div class="text-left">
+                    <div class="text-sm group-hover:text-foreground transition-colors" [class]="optChauffeur() ? 'text-foreground' : 'text-muted-foreground'">Chauffeur professionnel</div>
+                    <div class="text-xs text-muted-foreground">+150 000 GNF/jour</div>
                   </div>
-                </label>
-                <label class="flex items-center justify-between cursor-pointer group">
-                  <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Assurance tous risques</span>
-                  <div class="w-10 h-5 bg-secondary rounded-full relative">
-                    <div class="w-4 h-4 bg-muted-foreground rounded-full absolute left-0.5 top-0.5"></div>
+                  <div class="w-10 h-5 rounded-full relative transition-colors shrink-0 ml-3" [class]="optChauffeur() ? 'bg-primary' : 'bg-secondary'">
+                    <div class="w-4 h-4 rounded-full absolute top-0.5 transition-all" [class]="optChauffeur() ? 'bg-primary-foreground left-5' : 'bg-muted-foreground left-0.5'"></div>
                   </div>
-                </label>
-                <label class="flex items-center justify-between cursor-pointer group">
-                  <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Livraison sur site</span>
-                  <div class="w-10 h-5 bg-secondary rounded-full relative">
-                    <div class="w-4 h-4 bg-muted-foreground rounded-full absolute left-0.5 top-0.5"></div>
+                </button>
+                <button (click)="optAssurance.set(!optAssurance())" class="w-full flex items-center justify-between py-2.5 cursor-pointer group">
+                  <div class="text-left">
+                    <div class="text-sm group-hover:text-foreground transition-colors" [class]="optAssurance() ? 'text-foreground' : 'text-muted-foreground'">Assurance tous risques</div>
+                    <div class="text-xs text-muted-foreground">+75 000 GNF/jour</div>
                   </div>
-                </label>
+                  <div class="w-10 h-5 rounded-full relative transition-colors shrink-0 ml-3" [class]="optAssurance() ? 'bg-primary' : 'bg-secondary'">
+                    <div class="w-4 h-4 rounded-full absolute top-0.5 transition-all" [class]="optAssurance() ? 'bg-primary-foreground left-5' : 'bg-muted-foreground left-0.5'"></div>
+                  </div>
+                </button>
+                <button (click)="optMaintenance.set(!optMaintenance())" class="w-full flex items-center justify-between py-2.5 cursor-pointer group">
+                  <div class="text-left">
+                    <div class="text-sm group-hover:text-foreground transition-colors" [class]="optMaintenance() ? 'text-foreground' : 'text-muted-foreground'">Maintenance incluse</div>
+                    <div class="text-xs text-muted-foreground">+50 000 GNF/jour</div>
+                  </div>
+                  <div class="w-10 h-5 rounded-full relative transition-colors shrink-0 ml-3" [class]="optMaintenance() ? 'bg-primary' : 'bg-secondary'">
+                    <div class="w-4 h-4 rounded-full absolute top-0.5 transition-all" [class]="optMaintenance() ? 'bg-primary-foreground left-5' : 'bg-muted-foreground left-0.5'"></div>
+                  </div>
+                </button>
+                <button (click)="optLivraison.set(!optLivraison())" class="w-full flex items-center justify-between py-2.5 cursor-pointer group">
+                  <div class="text-left">
+                    <div class="text-sm group-hover:text-foreground transition-colors" [class]="optLivraison() ? 'text-foreground' : 'text-muted-foreground'">Livraison sur site</div>
+                    <div class="text-xs text-muted-foreground">+200 000 GNF (forfait)</div>
+                  </div>
+                  <div class="w-10 h-5 rounded-full relative transition-colors shrink-0 ml-3" [class]="optLivraison() ? 'bg-primary' : 'bg-secondary'">
+                    <div class="w-4 h-4 rounded-full absolute top-0.5 transition-all" [class]="optLivraison() ? 'bg-primary-foreground left-5' : 'bg-muted-foreground left-0.5'"></div>
+                  </div>
+                </button>
               </div>
+
+              <!-- Price Breakdown -->
+              @if (rentalDays() > 0 && t.pricePerDay) {
+                <div class="border-t border-border pt-4 mb-5 space-y-2.5 text-sm">
+                  <div class="flex justify-between text-muted-foreground">
+                    <span>Location ({{ rentalDays() }}j &times; {{ t.pricePerDay | number:'1.0-0' }})</span>
+                    <span>{{ baseTotal() | number:'1.0-0' }} GNF</span>
+                  </div>
+                  @if (optChauffeur()) {
+                    <div class="flex justify-between text-muted-foreground">
+                      <span>Chauffeur ({{ rentalDays() }}j &times; 150 000)</span>
+                      <span>+{{ chauffeurTotal() | number:'1.0-0' }} GNF</span>
+                    </div>
+                  }
+                  @if (optAssurance()) {
+                    <div class="flex justify-between text-muted-foreground">
+                      <span>Assurance ({{ rentalDays() }}j &times; 75 000)</span>
+                      <span>+{{ assuranceTotal() | number:'1.0-0' }} GNF</span>
+                    </div>
+                  }
+                  @if (optMaintenance()) {
+                    <div class="flex justify-between text-muted-foreground">
+                      <span>Maintenance ({{ rentalDays() }}j &times; 50 000)</span>
+                      <span>+{{ maintenanceTotal() | number:'1.0-0' }} GNF</span>
+                    </div>
+                  }
+                  @if (optLivraison()) {
+                    <div class="flex justify-between text-muted-foreground">
+                      <span>Livraison sur site</span>
+                      <span>+200 000 GNF</span>
+                    </div>
+                  }
+                  <div class="flex justify-between font-bold text-foreground pt-3 border-t border-border text-lg">
+                    <span>Total</span>
+                    <span class="text-primary">{{ grandTotal() | number:'1.0-0' }} GNF</span>
+                  </div>
+                </div>
+              }
 
               <button (click)="rentTruck()"
                 class="w-full py-3 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-colors glow-amber">
-                Confirmer la r&eacute;servation
+                @if (rentalDays() > 0 && t.pricePerDay) {
+                  Confirmer &middot; {{ grandTotal() | number:'1.0-0' }} GNF
+                } @else {
+                  Confirmer la r&eacute;servation
+                }
               </button>
 
               @if (!authService.isAuthenticated()) {
@@ -319,6 +471,37 @@ export class TruckDetailComponent implements OnInit {
   loadError = signal(false);
   currentPhoto = signal(0);
   private photoCount = computed(() => this.truck()?.photoUrls?.length ?? 0);
+
+  // Booking state
+  startDate = signal('');
+  endDate = signal('');
+  optChauffeur = signal(false);
+  optAssurance = signal(false);
+  optMaintenance = signal(false);
+  optLivraison = signal(false);
+
+  rentalDays = computed(() => {
+    const s = this.startDate();
+    const e = this.endDate();
+    if (!s || !e) return 0;
+    const diff = new Date(e).getTime() - new Date(s).getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+  });
+
+  baseTotal = computed(() => (this.truck()?.pricePerDay ?? 0) * this.rentalDays());
+  chauffeurTotal = computed(() => 150_000 * this.rentalDays());
+  assuranceTotal = computed(() => 75_000 * this.rentalDays());
+  maintenanceTotal = computed(() => 50_000 * this.rentalDays());
+
+  grandTotal = computed(() => {
+    let total = this.baseTotal();
+    if (this.optChauffeur()) total += this.chauffeurTotal();
+    if (this.optAssurance()) total += this.assuranceTotal();
+    if (this.optMaintenance()) total += this.maintenanceTotal();
+    if (this.optLivraison()) total += 200_000;
+    return total;
+  });
 
   weeklyPrice = computed(() => {
     const p = this.truck()?.pricePerDay;
