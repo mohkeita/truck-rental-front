@@ -39,6 +39,7 @@ interface NavItem {
         <nav class="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
           @for (item of navItems; track item.route) {
             <a [routerLink]="item.route" routerLinkActive="bg-sidebar-accent text-sidebar-primary"
+              [routerLinkActiveOptions]="{exact: item.route === '/'}"
               (click)="closeMobile()"
               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors cursor-pointer"
               [title]="!sidebarOpen() ? item.label : ''">
