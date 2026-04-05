@@ -349,6 +349,6 @@ export class CreateBookingComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/client/trucks']);
+    this.router.navigate(['/client/bookings']);
   }
 }

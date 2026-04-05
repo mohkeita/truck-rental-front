@@ -47,7 +47,7 @@ export class AuthService {
     } else if (role === 'OWNER') {
       this.router.navigate(['/owner/dashboard']);
     } else {
-      this.router.navigate(['/client/trucks']);
+      this.router.navigate(['/client/bookings']);
     }
   }
 }
