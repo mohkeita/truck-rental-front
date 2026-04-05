@@ -14,7 +14,7 @@ export class ContractService {
   }
 
   getMy(page = 0, size = 50) {
-    return this.http.get<PageResponse<ContractResponse>>(`${this.base}/my?page=${page}&size=${size}`);
+    return this.http.get<PageResponse<ContractResponse>>(`${this.base}/my?page=${page}&size=${size}&sort=id,desc`);
   }
 
   getById(id: number) {
