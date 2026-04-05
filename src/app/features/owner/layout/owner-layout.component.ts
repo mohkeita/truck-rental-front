@@ -22,6 +22,11 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
 
         <nav class="flex-1 py-4">
+          <a routerLink="/" (click)="closeMobile()"
+            class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
+            <span class="text-xl">🏠</span>
+            <span class="text-sm font-medium">Accueil du site</span>
+          </a>
           <a routerLink="/owner/dashboard" routerLinkActive="text-orange-400 bg-gray-800" (click)="closeMobile()"
             class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">
             <span class="text-xl">📊</span>

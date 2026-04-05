@@ -126,7 +126,7 @@ export const routes: Routes = [
         path: 'contracts',
         loadComponent: () => import('./features/client/contracts/client-contracts.component').then(m => m.ClientContractsComponent),
       },
-      { path: '', redirectTo: 'trucks', pathMatch: 'full' },
+      { path: '', redirectTo: 'bookings', pathMatch: 'full' },
     ],
   },
 

@@ -109,6 +109,7 @@ export class AdminLayoutComponent {
   mobileOpen = signal(false);
 
   navItems: NavItem[] = [
+    { icon: '🏠', label: 'Accueil du site', route: '/' },
     { icon: '📊', label: 'Tableau de bord', route: '/admin/dashboard' },
     { icon: '🚛', label: 'Camions', route: '/admin/trucks' },
     { icon: '📋', label: 'Réservations', route: '/admin/bookings' },
