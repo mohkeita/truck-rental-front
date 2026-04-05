@@ -192,8 +192,14 @@ export class ClientContractsComponent implements OnInit {
         const a = document.createElement('a');
         a.href = url;
         a.download = `contrat-${id}.pdf`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('PDF download error:', err);
+        alert('Impossible de télécharger le PDF. Veuillez réessayer.');
       },
     });
   }
