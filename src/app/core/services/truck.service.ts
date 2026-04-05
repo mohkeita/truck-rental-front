@@ -10,7 +10,7 @@ export class TruckService {
   private base = `${environment.apiUrl}/api/trucks`;
 
   getAll(page = 0, size = 10) {
-    return this.http.get<PageResponse<TruckResponse>>(`${this.base}?page=${page}&size=${size}`);
+    return this.http.get<PageResponse<TruckResponse>>(`${this.base}?page=${page}&size=${size}&sort=id,desc`);
   }
 
   getAvailable(page = 0, size = 20, filters?: TruckSearchFilters) {
