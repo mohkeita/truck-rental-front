@@ -19,6 +19,14 @@ export const routes: Routes = [
     path: 'contact',
     loadComponent: () => import('./features/public/contact/contact.component').then(m => m.ContactComponent),
   },
+  {
+    path: 'faq',
+    loadComponent: () => import('./features/public/faq/faq.component').then(m => m.FaqComponent),
+  },
+  {
+    path: 'about',
+    loadComponent: () => import('./features/public/about/about.component').then(m => m.AboutComponent),
+  },
 
   // Admin (protected)
   {

@@ -49,6 +49,21 @@
   color: transparent;
 }
 
+@utility hero-pattern {
+  background-image:
+    linear-gradient(hsl(220 14% 20% / 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(220 14% 20% / 0.3) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+@utility section-title {
+  @apply text-2xl lg:text-3xl font-heading font-bold text-foreground uppercase tracking-wide;
+}
+
+@utility badge-label {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20;
+}
+
 @utility animate-fade-in {
   animation: fade-in 0.4s ease-out;
 }
