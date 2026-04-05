@@ -1,9 +1,15 @@
 import { Component, inject, signal, computed, OnInit, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
+import { forkJoin } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { TruckService } from '../../../core/services/truck.service';
 import { TruckResponse } from '../../../core/models/truck.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { BookingService } from '../../../core/services/booking.service';
+import { PaymentService } from '../../../core/services/payment.service';
+import { LocationService } from '../../../core/services/location.service';
+import { ExtraRequest } from '../../../core/models/booking.model';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -270,14 +276,19 @@ import { environment } from '../../../../environments/environment';
                   </div>
                 </div>
               }
-              <button (click)="rentTruck()"
-                class="w-full py-3.5 bg-primary text-primary-foreground rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors glow-amber">
-                @if (rentalDays() > 0 && t.pricePerDay) {
+              <button (click)="rentTruck()" [disabled]="bookingInProgress()"
+                class="w-full py-3.5 bg-primary text-primary-foreground rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors glow-amber disabled:opacity-50">
+                @if (bookingInProgress()) {
+                  Traitement en cours...
+                } @else if (rentalDays() > 0 && t.pricePerDay) {
                   R&eacute;server &middot; {{ grandTotal() | number:'1.0-0' }} GNF
                 } @else {
                   R&eacute;server ce camion
                 }
               </button>
+              @if (bookingError()) {
+                <p class="text-xs text-destructive text-center mt-2">{{ bookingError() }}</p>
+              }
               @if (!authService.isAuthenticated()) {
                 <p class="text-xs text-muted-foreground text-center mt-2">Vous devez &ecirc;tre connect&eacute; pour r&eacute;server</p>
               }
@@ -392,15 +403,20 @@ import { environment } from '../../../../environments/environment';
                 </div>
               }
 
-              <button (click)="rentTruck()"
-                class="w-full py-3 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-colors glow-amber">
-                @if (rentalDays() > 0 && t.pricePerDay) {
+              <button (click)="rentTruck()" [disabled]="bookingInProgress()"
+                class="w-full py-3 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-colors glow-amber disabled:opacity-50">
+                @if (bookingInProgress()) {
+                  Traitement en cours...
+                } @else if (rentalDays() > 0 && t.pricePerDay) {
                   Confirmer &middot; {{ grandTotal() | number:'1.0-0' }} GNF
                 } @else {
                   Confirmer la r&eacute;servation
                 }
               </button>
 
+              @if (bookingError()) {
+                <p class="text-xs text-destructive text-center mt-3">{{ bookingError() }}</p>
+              }
               @if (!authService.isAuthenticated()) {
                 <p class="text-xs text-muted-foreground text-center mt-3">
                   <svg class="w-3.5 h-3.5 inline -mt-0.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
@@ -463,9 +479,14 @@ export class TruckDetailComponent implements OnInit {
   id = input.required<string>();
 
   private truckService = inject(TruckService);
+  private bookingService = inject(BookingService);
+  private paymentService = inject(PaymentService);
+  private locationService = inject(LocationService);
   authService = inject(AuthService);
   private router = inject(Router);
   apiUrl = environment.apiUrl;
+  bookingInProgress = signal(false);
+  bookingError = signal('');
 
   truck = signal<TruckResponse | null>(null);
   loadError = signal(false);
@@ -533,6 +554,8 @@ export class TruckDetailComponent implements OnInit {
     const t = this.truck();
     if (!t) return;
 
+    const hasDates = this.startDate() && this.endDate();
+
     // Sauvegarder les données du formulaire avant redirection
     const bookingData = {
       truckId: t.id,
@@ -549,7 +572,56 @@ export class TruckDetailComponent implements OnInit {
       this.authService.login(window.location.origin + '/client/book?truckId=' + t.id);
       return;
     }
-    this.router.navigate(['/client/book'], { queryParams: { truckId: t.id } });
+
+    // Si dates remplies : créer la réservation directement et rediriger vers le paiement
+    if (hasDates) {
+      this.bookingInProgress.set(true);
+      this.bookingError.set('');
+
+      // Charger les lieux puis créer le booking
+      this.locationService.getAll().subscribe({
+        next: (locations) => {
+          if (locations.length === 0) {
+            this.bookingInProgress.set(false);
+            this.bookingError.set('Aucun lieu de retrait disponible');
+            return;
+          }
+
+          const extras: ExtraRequest[] = [];
+          if (this.optChauffeur()) extras.push({ name: 'Chauffeur professionnel', pricePerDay: 150000 });
+          if (this.optAssurance()) extras.push({ name: 'Assurance tous risques', pricePerDay: 75000 });
+          if (this.optMaintenance()) extras.push({ name: 'Maintenance incluse', pricePerDay: 50000 });
+          if (this.optLivraison()) extras.push({ name: 'Livraison sur site', pricePerDay: 200000 });
+
+          this.bookingService.create({
+            truckId: t.id,
+            pickupLocationId: locations[0].id,
+            returnLocationId: locations[0].id,
+            pickupDate: this.startDate(),
+            returnDate: this.endDate(),
+            extras,
+          }).pipe(
+            switchMap(booking => this.paymentService.initiatePayment(booking.id))
+          ).subscribe({
+            next: (payment) => {
+              sessionStorage.removeItem('pendingBooking');
+              window.location.href = payment.paymentUrl;
+            },
+            error: (err) => {
+              this.bookingInProgress.set(false);
+              this.bookingError.set(err.error?.message || 'Erreur lors de la réservation');
+            },
+          });
+        },
+        error: () => {
+          this.bookingInProgress.set(false);
+          this.bookingError.set('Impossible de charger les lieux');
+        },
+      });
+    } else {
+      // Pas de dates : rediriger vers le formulaire complet
+      this.router.navigate(['/client/book'], { queryParams: { truckId: t.id } });
+    }
   }
 
   login() { this.authService.login(); }
